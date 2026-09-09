@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/codigo/02-estrategia/v2-estrategia-con-organico" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/codigo/02-estrategia" />
+      <excludeFolder url="file://$MODULE_DIR$/codigo/02-estrategia/v1-condicionales" />
+      <excludeFolder url="file://$MODULE_DIR$/codigo/02-estrategia/v1-condicionales-con-organico" />
+      <excludeFolder url="file://$MODULE_DIR$/codigo/02-estrategia/v2-estrategia" />
+      <excludeFolder url="file://$MODULE_DIR$/codigo/03-singleton" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

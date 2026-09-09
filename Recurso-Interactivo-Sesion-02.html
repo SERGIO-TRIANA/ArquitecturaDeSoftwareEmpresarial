@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sesión 2 · Patrones de diseño con valor arquitectónico · recurso interactivo</title>
+<style>
+:root{
+  --ink:#0F2A20; --verde:#166534; --azul:#1F5E7A; --laton:#8A6116;
+  --verdeLite:#6DD9A3; --azulLite:#7FC5DF; --latonLite:#E0BE63; --grayLite:#A6B4AC;
+  --tint:#EAF7EF; --tintZ:#EAF4F8; --tintL:#FBF3DE;
+  --gray:#4E5F55; --rule:#D3E0D7; --code:#12332A; --codeTx:#E6F1EA;
+  --serif: Cambria,"Bookman Old Style",Georgia,"Times New Roman",serif;
+  --sans: Calibri,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --mono: "Cascadia Mono",Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);font-size:17px;line-height:1.62;color:#15211b;background:#fff}
+a{color:var(--azul)}
+code,pre,kbd{font-family:var(--mono)}
+
+/* ---------- estructura ---------- */
+#capa{display:flex;min-height:100vh}
+#lado{width:274px;flex:0 0 274px;background:var(--ink);color:#fff;position:sticky;top:0;height:100vh;overflow-y:auto;padding:22px 0 40px}
+#lado h1{font-family:var(--serif);font-size:20px;line-height:1.25;margin:0 20px 4px;color:#fff}
+#lado .sub{margin:0 20px 18px;font-size:13px;color:var(--grayLite)}
+#lado nav a{display:block;position:relative;padding:9px 32px 9px 20px;color:#E9F2EC;text-decoration:none;font-size:15px;border-left:4px solid transparent}
+#lado nav a .n{display:inline-block;width:22px;color:var(--latonLite);font-family:var(--mono);font-size:13px}
+#lado nav a:hover{background:#16382C}
+#lado nav a.aqui{background:#16382C;border-left-color:var(--verdeLite);color:#fff}
+#lado nav a.visto::after{content:"✓";position:absolute;right:13px;top:9px;font-size:14px;line-height:1.62;color:var(--verdeLite)}
+#lado .cierre{margin:18px 20px 0;padding-top:14px;border-top:1px solid #2A4B3D;font-size:13px;color:var(--grayLite)}
+#lado .cierre a{color:var(--azulLite)}
+main{flex:1;min-width:0;padding:0 0 90px}
+.env{max-width:900px;margin:0 auto;padding:0 34px}
+
+/* ---------- portada y encabezados ---------- */
+.hero{background:var(--ink);color:#fff;padding:52px 0 44px;margin-bottom:34px}
+.hero .env{max-width:900px}
+.hero .kick{font-family:var(--mono);font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--latonLite);margin:0 0 12px}
+.hero h2{font-family:var(--serif);font-size:40px;line-height:1.12;margin:0 0 14px;color:#fff}
+.hero p{margin:0;color:#D6E4DB;max-width:66ch}
+.hero .meta{margin-top:20px;font-size:14px;color:var(--grayLite);font-family:var(--mono)}
+section.mod{display:none}
+section.mod.abierto{display:block}
+h3{font-family:var(--serif);font-size:29px;line-height:1.2;margin:38px 0 12px;color:var(--ink)}
+h4{font-family:var(--serif);font-size:21px;margin:30px 0 8px;color:var(--verde)}
+h5{font-family:var(--sans);font-size:16px;font-weight:700;margin:22px 0 6px;color:var(--ink);letter-spacing:.01em}
+p{margin:0 0 15px;max-width:74ch}
+blockquote p,.aviso p,.marca p,.expl p,.lab p,.preg p,#qRes p,#cbSal p{max-width:none}
+strong{color:#0d1c15}
+
+/* ---------- piezas ---------- */
+blockquote{margin:0 0 26px;padding:16px 20px;background:var(--tintZ);border-radius:8px;color:#1b2d24;font-size:16px}
+blockquote p:last-child{margin-bottom:0}
+.aviso{background:var(--tintL);border-radius:8px;padding:15px 19px;margin:0 0 20px}
+.aviso p:last-child{margin-bottom:0}
+.aviso .rot{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--laton);display:block;margin-bottom:5px}
+.tarjetas{display:grid;gap:14px;margin:0 0 22px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.tarj{background:var(--tint);border-radius:9px;padding:15px 17px}
+.tarj h6{margin:0 0 6px;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--verde)}
+.tarj p{font-size:15px;margin:0;max-width:none}
+table{border-collapse:collapse;width:100%;margin:0 0 22px;font-size:15.5px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--sans);font-weight:700;color:var(--verde);border-bottom:2px solid var(--verde)}
+tbody tr:nth-child(even){background:#F7FBF8}
+table.rep{table-layout:fixed}
+/* 46% le daba 780px a una columna cuya celda mas larga necesita ~680, y a cambio
+   obligaba al encabezado «¿Resuelve la tercera consecuencia?» a partirse en dos
+   lineas sobre celdas que dicen «si». */
+table.rep td:first-child,table.rep th:first-child{width:40%}
+/* El reparto automatico de anchos mira el texto mas largo de cada columna, y
+   cuando una columna angosta tiene al lado una de prosa larga, el navegador le
+   quita el espacio a la angosta aunque quede sitio libre a la derecha: asi es
+   como «techo 1,10» se partia en dos lineas. La clase va celda por celda y no
+   sobre la columna entera a proposito, porque una columna entera sin cortes
+   puede desbordar la tabla en una pantalla estrecha. */
+td.nw{white-space:nowrap}
+pre{background:var(--code);color:var(--codeTx);padding:15px 17px;border-radius:8px;overflow-x:auto;max-width:100%;white-space:pre;font-size:14px;line-height:1.5;margin:0 0 20px}
+pre b{color:var(--latonLite);font-weight:600}
+pre i{color:var(--verdeLite);font-style:normal}
+pre.sal{font-size:13.5px}
+/* NINGUN <pre> reparte una linea en dos: white-space:pre mas overflow-x:auto, o
+   sea que si no cabe se desplaza en horizontal y no se reacomoda. Antes esto era
+   pre-wrap con sangria francesa de -3ch, y estaba mal por una razon que solo se
+   ve mirando la pagina angosta: la sangria francesa manda la continuacion a la
+   columna 3 SIEMPRE, sin importar en que columna arranque la linea que continua.
+   Una linea de codigo indentada 8, 16 o 20 espacios --el min(new BigDecimal(...))
+   de PoliticaEspecial, el .append(...) de Politicas-- veia su continuacion
+   aparecer a la IZQUIERDA de si misma, o sea con una indentacion que miente
+   sobre el anidamiento del codigo. En una pagina que ensena a leer codigo eso no
+   se puede dejar pasar, y no hay forma de arreglarlo en CSS porque la sangria de
+   cada linea solo se conoce linea por linea. Desplazar en horizontal es honesto:
+   nunca afirma una indentacion que el archivo no tiene.
+   Los dos bloques de abajo llevan un cuerpo un poco menor porque traen salida
+   real de 95 y 97 caracteres --el diff de las dos carpetas y el mensaje de la
+   ArithmeticException, que no se pueden acortar sin dejar de ser lo que imprime
+   la maquina-- y asi caben enteras a 1280 px sin desplazar nada: medido en 798 px
+   y 754 px de columna. Por debajo de eso se desplazan, que es lo correcto. */
+pre>span.l{display:block}
+pre>span.l:empty::after{content:"\200b"}
+pre.dif{font-size:13.5px}
+#qSal pre.sal{font-size:12.75px}
+:not(pre)>code{background:var(--tint);padding:1px 2px;margin:0;border-radius:3px;font-size:.9em;white-space:nowrap;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+/* ---------- laboratorios ---------- */
+.lab{border:2px solid var(--rule);border-radius:11px;padding:19px 20px;margin:0 0 26px;background:#fff}
+.lab>h5:first-child{margin-top:0}
+.lab .rot{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--azul);display:block;margin-bottom:8px}
+.ctl{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end;margin:0 0 15px}
+.ctl label{font-size:13.5px;color:var(--gray);display:block;margin-bottom:3px;height:21px;line-height:21px}
+.ctl .campo{display:flex;flex-direction:column}
+.ctl input:not([type=checkbox]),.ctl select,.ctl button{height:36px}
+.ctl label.cbx{height:36px;line-height:36px;margin:0;font-size:15px;color:#15211b}
+input[type=text],input[type=number],select,textarea{font-family:var(--sans);font-size:15px;padding:7px 9px;border:1px solid #B9CBC0;border-radius:6px;background:#fff;color:#15211b}
+/* Un input mas angosto que su propio valor lo esconde sin avisar: con size="9"
+   los 109px cabian doce caracteres y «12345678.9012» se leia «.2345678.9012»,
+   que es otro numero y encima malformado. Los de size="4" son predicciones de un
+   digito y se quedan chicos a proposito. */
+.ctl input[type=text]{min-width:128px}
+.ctl input[type=text][size="4"]{min-width:64px}
+/* accent-color va en los dos: para checkbox no se hereda de la regla de range y
+   las casillas salian en el azul por omision del navegador, al lado de
+   deslizadores verde bosque en la misma fila (laboratorios 7 y 14). */
+input[type=range],input[type=checkbox]{accent-color:var(--verde)}
+input[type=range]{width:190px;margin:0}
+textarea{width:100%;min-height:96px;line-height:1.5;resize:vertical}
+button{font-family:var(--sans);font-size:15px;font-weight:600;padding:9px 16px;border-radius:7px;border:0;background:var(--verde);color:#fff;cursor:pointer}
+button:hover{background:#12522a}
+button.sec{background:var(--tint);color:var(--verde)}
+button.sec:hover{background:#DCEFE3}
+button.ln{background:var(--azul)}
+button.ln:hover{background:#194F66}
+/* Sin el borde punteado, un boton deshabilitado y un boton secundario habilitado
+   se distinguian solo por un leve giro a gris: mismo tamano, mismo peso, mismo
+   radio. El texto se queda en 5,32:1, que pasa AA. */
+button:disabled{background:#DCE6E0;color:#4E5F55;cursor:default;box-shadow:inset 0 0 0 1px #7F9488;font-weight:500}
+.val{font-family:var(--mono);font-size:15px;color:var(--ink);min-width:58px;display:inline-block}
+/* Las trazas van en columnas alineadas —«exceso = 8.0 - 11 = -3.0»— y una
+   linea reacomodada rompe la alineacion justo donde el estudiante esta
+   comparando dos numeros. Igual que los <pre>: se desplaza, no se reparte. */
+.pasos{font-family:var(--mono);font-size:13.5px;background:var(--tintZ);border-radius:7px;padding:13px 15px;margin:0 0 15px;line-height:1.75;white-space:pre;overflow-x:auto}
+.pasos .r{color:var(--laton)}
+.grande{font-family:var(--serif);font-size:32px;color:var(--verde);line-height:1.1}
+.grande.mal{color:#8F2222}
+.chip{display:inline-block;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:20px;background:var(--tint);color:var(--verde);margin-right:6px}
+.chip.b{background:var(--tintL);color:var(--laton)}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dos>*{min-width:0}
+@media(max-width:820px){.dos{grid-template-columns:1fr}}
+.apilado{margin:0 0 18px}
+.apilado>pre{margin-bottom:12px}
+.apilado>pre:last-child{margin-bottom:0}
+.tabs{display:flex;gap:6px;margin-bottom:0}
+.tabs button{background:var(--tint);color:var(--verde);border-radius:7px 7px 0 0;font-size:14px;padding:8px 14px}
+.tabs button.on{background:var(--code);color:var(--codeTx)}
+.tabs+pre{border-top-left-radius:0}
+.carril{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:0 0 14px}
+.carril div{background:var(--tint);border-radius:6px;padding:8px 4px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--gray);min-height:70px}
+.carril div.act{background:var(--tintL);color:var(--laton)}
+.carril div.hizo{background:var(--verde);color:#fff}
+.marca{font-size:14px;padding:9px 13px;border-radius:7px;margin:0 0 13px}
+.marca.si{background:var(--tint);color:#134e2a}
+.marca.no{background:#FBEDEC;color:#7E2019}
+.opciones{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.op{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border:1px solid var(--rule);border-radius:8px;cursor:pointer;font-size:15.5px}
+.op:hover{background:#F7FBF8}
+.op.elegida{border-color:var(--azul);background:var(--tintZ)}
+.op.ok{border-color:var(--verde);background:var(--tint)}
+.op.err{border-color:#B4544B;background:#FBEDEC}
+.op input{margin-top:4px}
+/* El fondo verde claro de una opcion significa «esta es correcta», y es el mismo
+   verde claro con que se tinta el codigo dentro de la prosa. Una opcion sin
+   revisar que trae un identificador de Java adentro se ve entonces como si ya
+   estuviera marcada: el laboratorio 13 tiene tres de cuatro opciones asi y un
+   revisor las leyo como respuestas ya reveladas. Dentro de una opcion el codigo
+   va con un gris muy claro, y el verde queda reservado para lo que dice el
+   corrector. */
+/* En una caja de color el relleno del chip de codigo deja de separarse del
+   fondo: #EDF1EE sobre el rosa del panel de error da 1,00:1 de razon de
+   contraste --misma luminancia, distinto tono-- y `List<Liquidacion>` se ve como
+   un manchon en vez de una pastilla. Ningun relleno casi blanco puede resolverlo
+   porque los cuatro fondos de panel tambien son casi blancos, asi que lo que
+   dibuja el chip es el borde: #6E8478 da 3,52:1 contra el rosa del error,
+   3,64:1 contra el verde del acierto, 3,59:1 contra el azul de la elegida y
+   4,01:1 contra el blanco. Medido con la formula de luminancia relativa de WCAG.
+   En prosa corriente el chip sigue sin borde: ahi no compite con nada y la
+   fuente monoespaciada ya lo senala. */
+.op code,.expl code,.marca code,.aviso code{background:#EDF1EE;border:1px solid #6E8478}
+/* El borde en reposo de una opcion era #D3E0D7 sobre blanco, 1,36:1: el limite
+   de la opcion sin contestar practicamente no existia. #7F9488 da 3,23:1, que
+   es el minimo que WCAG pide para un componente de interfaz. */
+.op{border-color:#7F9488}
+.preg{border-top:1px solid var(--rule);padding-top:22px;margin-top:26px}
+.preg .num{font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;color:var(--laton);text-transform:uppercase}
+.expl{font-size:15px;background:var(--tintZ);border-radius:8px;padding:12px 15px;margin:0 0 8px}
+.expl.mal{background:#FBEDEC}
+#barra{position:fixed;left:274px;right:0;bottom:0;background:var(--ink);color:#fff;padding:10px 34px;display:flex;gap:18px;align-items:center;font-size:14px;z-index:5}
+#barra .sep{flex:1}
+#barra b{color:var(--latonLite)}
+@media(max-width:900px){
+  #capa{flex-direction:column}
+  #lado{width:auto;flex:none;height:auto;position:static}
+  #lado nav{display:flex;flex-wrap:wrap}
+  /* El padding-right de 32px no es decoracion: es el canal donde vive el ✓ de
+     «modulo visitado», que esta posicionado en absoluto contra el borde derecho.
+     Con el padding de 12px de antes el ✓ se montaba diez pixeles encima de la
+     ultima letra del titulo y se leia «Taller✓1». Medido a 899 y a 820 px.
+     La medida buena no es el ancho de la caja del enlace —esa termina siempre
+     donde arranca el padding y por eso da cero pase lo que pase— sino el rect
+     del ultimo caracter contra el rect del glifo. Medido asi en Chromium a
+     899, 820 y 560 px: el ✓ ocupa 11,7 px y quedan 11,3 px de aire con estos
+     32 px de canal. Con los 26 px anteriores el aire era de 5,3 px: no habia
+     solape, pero no habia margen para una tipografia un punto mas grande. */
+  #lado nav a{border-left:0;border-bottom:4px solid transparent;padding:8px 32px 8px 12px}
+  #lado nav a.visto::after{right:9px;top:8px}
+  #lado nav a.aqui{border-left:0;border-bottom-color:var(--verdeLite)}
+  #barra{left:0}
+}
+@media print{#lado,#barra,.tabs{display:none}section.mod{display:block!important}}
+</style>
+</head>
+<body>
+<div id="capa">
+<aside id="lado">
+  <h1>Sesión 2</h1>
+  <p class="sub">Patrones de diseño con valor arquitectónico · Arquitectura de Software Empresarial (248G8F) · Universidad de Caldas</p>
+  <nav id="nav"></nav>
+  <p class="cierre">Todo lo que este recurso muestra se calcula en su navegador con la misma aritmética del código Java de la sesión. <a href="#" id="verFuente">Cómo se verificó</a>.</p>
+</aside>
+
+<main>
+<div class="hero">
+  <div class="env">
+    <p class="kick">Recurso interactivo · sesión 2</p>
+    <h2 id="heroT">Patrones de diseño con valor arquitectónico</h2>
+    <p id="heroP">Nueve módulos: uno de apertura, seis con laboratorios que se ejecutan en su navegador, uno de cierre y una evaluación que se corrige sola. Con esto solo —sin el proyector, sin las diapositivas y sin haber estado en el salón— se puede entender la sesión completa.</p>
+    <p class="meta" id="heroM">miércoles 2 de septiembre de 2026 · miércoles de 6:00 a 9:30 p.m.</p>
+  </div>
+</div>
+<div class="env" id="cuerpo">
+<!-- ================= M0 ================= -->
+<section class="mod" id="m0" data-t="Cómo usar esto" data-h="Cómo usar esto, y las tres ideas de hoy por adelantado">
+<blockquote><p>Este recurso cubre la sesión completa del miércoles 2 de septiembre. No es un resumen de las diapositivas: es la sesión, con lo que en el salón se proyecta convertido en algo que usted puede ejecutar y cambiar. Quien faltó a clase, o estuvo y no alcanzó a correr nada, puede quedar al día con esto solo.</p></blockquote>
+
+<p>Son nueve módulos y conviene recorrerlos en orden, porque cada uno cobra algo del anterior. Los siete del medio corresponden a los bloques de la clase, uno por uno, y la tabla de abajo dice cuál con cuál; el último es una evaluación que se corrige sola y produce un comprobante para entregar. Seis de los nueve traen laboratorios en los que hay algo que ejecutar o que predecir, y ahí está la parte que importa de este recurso: <strong>ninguna cifra de esta página está escrita a mano</strong>. Todas salen de que su navegador haga la cuenta con la misma aritmética del código Java de la sesión, y más abajo está dicho cómo se comprobó que es la misma.</p>
+
+<div class="aviso"><span class="rot">Antes de empezar</span><p>Esta página <strong>no guarda nada</strong>. Si la recarga o cierra la pestaña, las respuestas de la evaluación se pierden y hay que volver a hacerla. Es a propósito —no quiero pedirle permisos al navegador para guardar cosas suyas— y tiene una consecuencia práctica: <strong>cuando termine la evaluación, descargue el comprobante antes de cerrar</strong>.</p></div>
+
+<h4>Las tres ideas de hoy, por adelantado</h4>
+<p>Decir el final al principio no arruina nada y ahorra la mitad del esfuerzo, porque uno lee distinto cuando sabe qué está buscando.</p>
+<div class="tarjetas g3">
+  <div class="tarj"><h6>1 · Antes del patrón, el tipo de dato</h6><p>Un patrón impecable sobre un tipo de dato equivocado produce un sistema impecablemente equivocado. <code>double</code> no puede representar 0,1, y de ahí sale un peso de diferencia en una sola liquidación.</p></div>
+  <div class="tarj"><h6>2 · Strategy no elimina conocimiento: lo muda</h6><p>Sacar las tres fórmulas del método que calcula la plata no las hace desaparecer. Alguien tiene que saber que existen. La ganancia está en <em>dónde</em> queda ese alguien.</p></div>
+  <div class="tarj"><h6>3 · Singleton se enseña para no usarlo</h6><p>Es el único patrón de hoy que se estudia para reconocerlo en un sistema heredado. No garantiza lo único que promete, y eso es lo <em>menos</em> grave que tiene.</p></div>
+</div>
+
+<h4>Qué hay en cada módulo</h4>
+<table>
+<thead><tr><th>Módulo</th><th>Bloque de la clase</th><th>Qué se ejecuta aquí</th></tr></thead>
+<tbody>
+<tr><td>2 · Patrón y decisión</td><td>1</td><td>Un clasificador de cinco casos: cuál patrón tiene valor arquitectónico y cuál no</td></tr>
+<tr><td>3 · El dinero</td><td>2</td><td>Cinco laboratorios, incluida la liquidación que se equivoca por un peso y un millón de operaciones de verdad</td></tr>
+<tr><td>4 · Strategy</td><td>3</td><td>Tres laboratorios: un simulador del factor de calidad que muestra la cuenta paso a paso, una predicción que usted escribe antes de ver la salida, y las cuatro muestras del ejemplo corridas por las dos versiones del código</td></tr>
+<tr><td>5 · El punto de cableado</td><td>4</td><td>La salida real del <code>diff</code> de las dos carpetas, el archivo de cableado completo, y una predicción del costo del taller que queda en el comprobante</td></tr>
+<tr><td>6 · Singleton</td><td>5</td><td>Tres laboratorios: las dos pruebas que se pisan corriendo en los dos órdenes, el entrelazado de los ocho hilos, y la pregunta que reemplaza al patrón sobre cuatro objetos administrados por Spring</td></tr>
+<tr><td>7 · Taller 1</td><td>6</td><td>Un comprobador de la fórmula del cuarto tipo de café</td></tr>
+<tr><td>8 · Cierre</td><td>8</td><td>El resumen y qué traer a la sesión 3</td></tr>
+<tr><td>9 · Evaluación</td><td>—</td><td>Dieciséis preguntas que se corrigen solas y las cinco de autoevaluación, con comprobante descargable</td></tr>
+</tbody>
+</table>
+<p>El bloque 7 de la clase —la verificación del proyecto de Spring Boot— no tiene módulo aquí porque es logística de máquina y no se puede hacer en un navegador. Está donde siempre: en <code>00-Curso/Preparacion-del-Entorno.md</code>, y lo que hay que lograr antes de la sesión 3 está en el módulo 8.</p>
+
+<h4 id="comoSeVerifico">Cómo se verificó que la aritmética de esta página es la del código Java</h4>
+<p>El curso tiene una regla que se aplica también a sí mismo: <strong>ninguna cifra que no se haya verificado</strong>. Una página que calcula en vivo es un problema para esa regla, porque los números no existen todavía cuando se escribe la página. La forma de cumplirla fue esta.</p>
+<p>El dinero de esta página <strong>no se calcula con los números del navegador</strong>. Los números de JavaScript son exactamente los mismos <code>double</code> de Java —el mismo estándar IEEE-754, el mismo tamaño, las mismas operaciones—, así que sirven para <em>demostrar el defecto</em>, y para eso se usan tal cual. Pero el lado correcto de cada comparación está implementado aparte, con enteros grandes y una escala, replicando las reglas de <code>BigDecimal</code>: <code>setScale</code> con <code>HALF_UP</code>, <code>max</code>, <code>min</code>, y una división que redondea una sola vez al final.</p>
+<p>Y una cosa sobre cómo se <em>ven</em> esos números, porque en una sesión que trata precisamente de separadores decimales sería feo mezclarlos sin avisar. <strong>Las trazas, las líneas que dicen «lo que su <code>Main1</code> tiene que imprimir» y todo lo que aparezca en tipografía de máquina están escritos como los imprime Java</strong>, que formatea con <code>Locale.ROOT</code>: coma para los miles y punto para los decimales, <code>11,286,000</code> y <code>0.9625</code>. Es deliberado, porque son réplicas, y una réplica que cambie el formato deja de servir para lo único que sirve, que es compararla contra su consola. <strong>La prosa de la página, los resultados en letra grande y los enunciados de la evaluación están en español de Colombia</strong>: punto para los miles y coma para los decimales, 11.286.000 y 0,9625. Si ve el mismo número escrito de las dos formas en la misma pantalla —el resultado grande y la línea de la traza justo encima—, no es un descuido: es la diferencia entre lo que imprime el programa y lo que dice quien lo explica.</p>
+<p>Que esa réplica sea fiel no se dio por hecho: se midió dos veces. Primero se generó con el Java de la sesión una tabla de <strong>18.200 casos</strong> —los cuatro tipos de café, por las veinticinco humedades de 8,0 a 20,0 que los controles permiten de cinco en cinco décimas, por las trece mallas de 12 a 24, por certificada y no certificada, por siete pesos distintos de entrega—, se generó la misma tabla con el código de esta página, y las dos salieron <strong>idénticas línea por línea</strong>. Después se replicó el programa <code>DineroDemo.java</code> completo, con sus seis bloques, y su salida también salió idéntica a la del programa Java, incluidos los cincuenta y cinco dígitos de <code>new BigDecimal(0.1)</code> y una rareza del formateo de Java que casi nadie conoce y que está explicada en el módulo 3. Del sexto bloque, que es el que compara los dos órdenes posibles de la misma cuenta, se comprobó aparte algo más exigente: <strong>dos mil entregas con kilos de cuatro decimales, calculadas por los dos órdenes en Java y en esta página, coincidieron dígito por dígito en los cuatro números de cada caso</strong>, y en 1.244 de esas dos mil el orden de las operaciones cambia el peso que se paga.</p>
+<div class="aviso"><span class="rot">Lo que eso no prueba</span><p>Que las dos implementaciones coincidan en 18.200 casos no prueba que coincidan en todos, y hay que decir con precisión qué sí prueba. De los cuatro datos de la muestra, tres se mueven con controles que solo tienen un número finito de posiciones —el tipo, la humedad y la malla, más la casilla de la certificación—, y de esos <strong>se barrió la rejilla completa</strong>: no falta ni una combinación. El cuarto, los kilos, es un campo de texto en el que usted puede escribir cualquier número, así que ahí no hay rejilla que barrer; se barrieron siete pesos de entrega, más las dos mil entregas de cuatro decimales del párrafo anterior. <strong>El caso que quedaría sin cubrir es un peso de entrega raro, no una humedad ni una malla raras.</strong> <strong>Si encuentra un caso donde esta página y su Java digan cosas distintas, es un hallazgo y quiero saberlo</strong>: escríbame con los cuatro datos de la muestra.</p></div>
+</section>
+
+<!-- ================= M1 ================= -->
+<section class="mod" id="m1" data-t="Patrón y decisión" data-h="Bloque 1 · Qué distingue un patrón de una decisión arquitectónica">
+<blockquote><p>Este módulo es el bloque 1 de la clase. Contesta por qué el título de la sesión dice «patrones de diseño <em>con valor arquitectónico</em>» y qué hace ese adjetivo, que es el tema entero.</p></blockquote>
+
+<p>La sesión 1 terminó con una interfaz de dos líneas, <code>TarifaRepositorio</code>, y con una afirmación que en ese momento hubo que aceptar por confianza: que introducirla costaba poco ese día y muchísimo tres años después. Hoy se paga esa confianza. <strong>Los tres patrones de esta sesión son la misma maniobra de la sesión 1 aplicada a cosas distintas</strong>, y tienen nombre propio porque alguien ya la hizo suficientes veces como para ponerle nombre.</p>
+
+<p>Un patrón de diseño es una solución con nombre a un problema que se repite. La mayoría de los del catálogo de Gamma, Helm, Johnson y Vlissides —los cuatro autores que todo el mundo cita como «GoF», <em>Gang of Four</em>, cuyo libro es de 1994 y trae veintitrés patrones— resuelven problemas locales: cómo recorrer una colección sin exponer su estructura, cómo construir un objeto con veinte parámetros opcionales sin escribir veinte constructores. Esos son buenos patrones y no son arquitectura, y cumplen el criterio de la sesión 1 al revés: si mañana cambia de opinión, cambia una clase y nadie más se enteró.</p>
+
+<div class="aviso"><span class="rot">El criterio, en una frase</span><p><strong>Un patrón tiene valor arquitectónico cuando decide quién depende de quién.</strong> Los tres de hoy lo hacen, y por eso están escogidos: Strategy decide que el cálculo no dependa de las fórmulas, el punto de cableado decide dónde vive el conocimiento de que las fórmulas existen, y Singleton decide que todo el programa dependa de un objeto que nadie declaró.</p></div>
+
+<div class="lab">
+<span class="rot">Laboratorio 1 · clasificador</span>
+<h5>Cinco casos: ¿decide quién depende de quién?</h5>
+<p style="font-size:15.5px">Para cada caso, la pregunta no es si el patrón es bueno, ni si está bien aplicado. Es una sola: <strong>si mañana cambio de opinión sobre esto, ¿cuántos archivos se enteran?</strong> Responda los cinco y después compare.</p>
+<div id="clasi"></div>
+<div class="ctl">
+  <button id="clasiVer">comprobar los cinco</button>
+  <button class="sec" id="clasiOtra" style="display:none">volver a intentar</button>
+</div>
+<div id="clasiRes"></div>
+</div>
+
+<h4>Tres fechas, dichas al principio y no al final</h4>
+<p>La primera es que <strong>el taller 1 empieza en el bloque 6 de esta sesión y vence el miércoles 9 de septiembre a las 11:59 p.m.</strong>; se trabaja en clase con acompañamiento precisamente para que las preguntas salgan cuando estoy presente. La segunda es que <strong>la sesión 3 abre con el quiz 1</strong>, sobre lo de hoy y lo de la sesión 1, y se aplica al comienzo: quien llegue tarde llega al quiz empezado. <strong>Esas dos fechas caen el mismo día</strong>, el miércoles 9: la sesión 3 es de 6:00 a 9:30 p.m. y el plazo del taller cierra dos horas y media después, así que hay que llegar a esa clase con el informe ya escrito. La tercera es que el parcial 1 de la sesión 8 cubre las sesiones 1 a 7, o sea que nada de esto se cierra hoy.</p>
+<table>
+<thead><tr><th>Instrumento</th><th>Cuándo</th><th>Peso</th></tr></thead>
+<tbody>
+<tr><td>Taller 1 — patrones de diseño en Java</td><td>se sube el miércoles 9 de septiembre,&nbsp;11:59&nbsp;p.m.</td><td class="nw">30% del corte 1</td></tr>
+<tr><td>Quiz 1 — fundamentos, atributos de calidad y patrones GoF</td><td>sesión 3, al comienzo; cubre las sesiones 1 y 2</td><td class="nw">20% del corte 1</td></tr>
+<tr><td>Parcial 1</td><td>sesión 8; cubre las sesiones 1 a 7</td><td class="nw">35% del corte 2</td></tr>
+</tbody>
+</table>
+<p>Y una observación sobre cómo estudiar que vale para todo el semestre: <strong>las preguntas de autoevaluación con las que cierra cada guía son el temario del quiz</strong>. No son un repaso opcional, son una muestra del instrumento. Las cinco de esta sesión están en el módulo 9 de este recurso, para contestarlas escribiendo y no leyendo.</p>
+</section>
+
+<!-- ================= M2 ================= -->
+<section class="mod" id="m2" data-t="El dinero" data-h="Bloque 2 · El dinero, o por qué ningún patrón sirve si el tipo de dato está mal">
+<blockquote><p>Este módulo es el bloque 2 de la clase, y es el que sostiene a los tres que siguen. No estaba en el temario y está aquí por una razón práctica: <strong>los tres patrones de hoy multiplican pesos</strong>. Es además el tema por el que más reclamos reales llegan a una cooperativa, y el que menos se enseña.</p></blockquote>
+
+<p>El archivo de la clase es <code>codigo/01-dinero/DineroDemo.java</code>, y los cinco laboratorios de este módulo son sus cinco primeros bloques, ejecutándose aquí. El segundo es el que hay que hacer despacio; los otros cuatro son de apoyo. El programa tiene un sexto bloque que no tiene laboratorio propio porque <strong>sale solo</strong>: escriba en el laboratorio 3 unos kilos con cuatro decimales, como <code>33.3333</code>, y aparece un segundo aviso al final de la corrida.</p>
+
+<div class="lab">
+<span class="rot">Laboratorio 2 · el bloque 1 de DineroDemo</span>
+<h5>La suma que todo el mundo cree que da 0,3</h5>
+<p style="font-size:15.5px">Casi todo el mundo ya vio esto y lo archivó como una curiosidad. Ahí está el problema, porque la conclusión que casi todos sacan —«entonces hay que redondear al final»— es falsa, y el laboratorio 3 la desarma.</p>
+<button id="d1Run">ejecutar</button>
+<pre class="sal" id="d1Sal" style="display:none;margin-top:15px"></pre>
+<p id="d1Nota" style="display:none;font-size:15.5px">Esas seis líneas las acabó de calcular su navegador. La razón es que <code>double</code> guarda los números en base 2 y <strong>0,1 en binario es periódico, exactamente como 1/3 en decimal</strong>. No es un defecto de Java ni de JavaScript: es el estándar IEEE-754, y cualquier lenguaje con punto flotante binario hace lo mismo.</p>
+</div>
+
+<div class="lab">
+<span class="rot">Laboratorio 3 · el bloque 2, el que hay que saberse</span>
+<h5>La liquidación que se equivoca por un peso</h5>
+<p style="font-size:15.5px">Una entrega de 30,9 kg de pergamino con factor de calidad 0,9625, al precio de referencia de 2.850.000 pesos por carga. Cambie los tres valores si quiere, pero primero ejecútelo tal como está, porque el caso de partida es el que hay que saberse.</p>
+<div class="ctl">
+  <div class="campo"><label>kilos entregados</label><input type="text" id="fKilos" value="30.9" size="9"></div>
+  <div class="campo"><label>factor de calidad</label><input type="text" id="fFactor" value="0.9625" size="9"></div>
+  <div class="campo"><label>precio por carga</label><input type="text" id="fPrecio" value="2850000" size="11"></div>
+  <div class="campo"><button id="fRun">liquidar por los dos caminos</button></div>
+</div>
+<div id="fSal"></div>
+<div class="ctl" style="margin-top:4px">
+  <button class="sec" id="fBuscar">buscar otros casos en la frontera</button>
+  <button class="sec" id="fReset">volver al caso de la clase</button>
+</div>
+<div id="fBusca"></div>
+</div>
+
+<div class="lab">
+<span class="rot">Laboratorio 4 · el bloque 3</span>
+<h5>Un millón de entregas, dos escenarios, el mismo código</h5>
+<p style="font-size:15.5px">El argumento que aparece en todos los tutoriales es el de la acumulación: el error crece con el número de operaciones. Es cierto y es <strong>más débil de lo que parece</strong>, y aquí es donde se ve. Los dos escenarios usan el mismo código y solo cambian los tres números de entrada. Su navegador va a hacer el millón de sumas de verdad, así que tarda un instante.</p>
+<div class="ctl">
+  <div class="campo"><label>kilos</label><input type="text" id="aKilos" value="12.5" size="9"></div>
+  <div class="campo"><label>precio por carga</label><input type="text" id="aPrecio" value="2850000" size="11"></div>
+  <div class="campo"><label>factor</label><input type="text" id="aFactor" value="0.96" size="9"></div>
+  <div class="campo"><label>repeticiones</label><input type="text" id="aN" value="1000000" size="11"></div>
+  <div class="campo"><button id="aRun">acumular</button></div>
+</div>
+<div class="ctl" style="margin-top:-8px">
+  <button class="sec" id="aEsc1">escenario 1 · 12,5 kg · 2.850.000 · 0,96</button>
+  <button class="sec" id="aEsc2">escenario 2 · 37,3 kg · 2.871.450 · 0,9635</button>
+</div>
+<div id="aSal"></div>
+</div>
+
+<div class="lab">
+<span class="rot">Laboratorio 5 · el bloque 4</span>
+<h5>Las dos trampas de BigDecimal, y qué vale de verdad un decimal que usted escriba</h5>
+<p style="font-size:15.5px">Escriba cualquier número con decimales. La primera línea de la salida es lo que un <code>double</code> guarda de verdad, hasta el último dígito; la segunda, lo que guarda un decimal construido desde texto. La diferencia entre las dos líneas es la primera trampa, y son dos comillas.</p>
+<div class="ctl">
+  <div class="campo"><label>escriba un decimal</label><input type="text" id="tNum" value="0.1" size="14"></div>
+  <div class="campo"><button id="tRun">ver el valor exacto</button></div>
+  <div class="campo"><button class="sec" id="tP1">0.1</button></div>
+  <div class="campo"><button class="sec" id="tP2">2.85</button></div>
+  <div class="campo"><button class="sec" id="tP3">0.9625</button></div>
+  <div class="campo"><button class="sec" id="tP4">678100.5</button></div>
+</div>
+<div id="tSal"></div>
+<h5>La segunda trampa: <code>equals</code> mira la escala y <code>compareTo</code> no</h5>
+<div class="ctl">
+  <div class="campo"><label>un monto</label><input type="text" id="eA" value="2.50" size="9"></div>
+  <div class="campo"><label>el otro</label><input type="text" id="eB" value="2.5" size="9"></div>
+  <div class="campo"><button id="eRun">comparar de las dos formas</button></div>
+</div>
+<div id="eSal"></div>
+</div>
+
+<div class="lab">
+<span class="rot">Laboratorio 6 · el bloque 5</span>
+<h5>La división que obliga a tomar una decisión</h5>
+<p style="font-size:15.5px">Divida sin decir con cuántos decimales. Si el cociente es periódico, <code>BigDecimal</code> no se inventa un redondeo: lanza una excepción. Pruebe 10 entre 3, y después 10 entre 4.</p>
+<div class="ctl">
+  <div class="campo"><label>dividendo</label><input type="text" id="qA" value="10" size="9"></div>
+  <div class="campo"><label>divisor</label><input type="text" id="qB" value="3" size="9"></div>
+  <div class="campo"><button id="qRun">divide() sin argumentos</button></div>
+</div>
+<div id="qSal"></div>
+</div>
+
+<h4>Las cinco reglas del dinero en este curso</h4>
+<p>No son cinco opiniones de estilo: cada una viene de uno de los laboratorios de arriba, y las cinco se van a cobrar en el código de las tres entregas del proyecto.</p>
+<div class="tarjetas g2">
+  <div class="tarj"><h6>1 · Se construye desde texto</h6><p><code>new BigDecimal("0.1")</code> y nunca <code>new BigDecimal(0.1)</code>. El segundo recibe el <code>double</code> ya roto y copia su basura hasta el último de sus cincuenta y cinco dígitos.</p></div>
+  <div class="tarj"><h6>2 · Se compara con <code>compareTo</code></h6><p>Para dinero, <code>compareTo(...) == 0</code> y nunca <code>equals</code>, porque <code>equals</code> también compara la escala y 2,50 no es igual a 2,5 aunque sea el mismo dinero.</p></div>
+  <div class="tarj"><h6>3 · Se divide con escala y modo</h6><p>Siempre explícitos, para que la decisión quede escrita en el código y no heredada de la biblioteca.</p></div>
+  <div class="tarj"><h6>4 · Se multiplica todo y se divide una vez</h6><p>Una sola división al final y un solo redondeo. Dividir primero y multiplicar después mete un redondeo intermedio que se paga en pesos.</p></div>
+  <div class="tarj"><h6>5 · El redondeo final es una regla de negocio</h6><p><code>setScale(0, HALF_UP)</code> está escrito y no implícito porque significa algo: la cooperativa paga pesos enteros y redondea a favor del caficultor desde la mitad. Eso merece estar visible.</p></div>
+</div>
+</section>
+
+<!-- ================= M3 ================= -->
+<section class="mod" id="m3" data-t="Strategy" data-h="Bloque 3 · Strategy sobre el factor de calidad">
+<blockquote><p>Este módulo es el bloque 3 de la clase. El caso es una extensión natural del de la sesión 1: allá el sistema aprendió a no saber <strong>de dónde viene el precio</strong>; hoy tiene que aprender a no saber <strong>cómo se calcula el factor de calidad</strong>, que es el número por el que se multiplica el precio.</p></blockquote>
+
+<p>La cooperativa liquida tres tipos de café y cada uno tiene su fórmula. Lo que hay que mirar de la tabla no son los números, es la última columna.</p>
+<table>
+<thead><tr><th>Tipo</th><th>Fórmula del factor</th><th>Límite</th><th>Qué mira de la muestra</th></tr></thead>
+<tbody>
+<tr><td><code>PERGAMINO</code></td><td>penaliza 2 puntos porcentuales por cada punto de humedad sobre 11</td><td class="nw">piso 0,85</td><td>la humedad</td></tr>
+<tr><td><code>EXCELSO</code></td><td>premia 1,5 puntos por cada punto de malla sobre 15</td><td class="nw">techo 1,10</td><td>la malla, y la humedad no le importa</td></tr>
+<tr><td><code>ESPECIAL</code></td><td>la del pergamino, más una prima de 0,08 si la certificación está vigente</td><td class="nw">techo 1,10</td><td>la humedad y la certificación</td></tr>
+</tbody>
+</table>
+<p><strong>Los tres números —el 0,02, el 0,015 y el 0,08— y los dos límites son del ejercicio y no son cotizaciones reales</strong>; están escogidos para que las cuentas den valores verificables a mano.</p>
+
+<div class="lab">
+<span class="rot">Laboratorio 7 · simulador del factor</span>
+<h5>La cuenta completa, paso a paso</h5>
+<p style="font-size:15.5px">Mueva la humedad hasta que se active el piso del pergamino. Después ponga <code>EXCELSO</code> y mueva la humedad: no pasa nada, y eso es el punto del módulo. Cada línea de la traza es una operación del código Java, en el mismo orden.</p>
+<div class="ctl">
+  <div class="campo"><label>tipo</label><select id="sTipo"><option>PERGAMINO</option><option>EXCELSO</option><option>ESPECIAL</option></select></div>
+  <div class="campo"><label>humedad · <span class="val" id="sHumV">11,5</span></label><input type="range" id="sHum" min="80" max="200" step="5" value="115"></div>
+  <div class="campo"><label>malla · <span class="val" id="sMalV">15</span></label><input type="range" id="sMal" min="12" max="24" step="1" value="15"></div>
+  <div class="campo"><label>kilos</label><input type="text" id="sKilos" value="500" size="9"></div>
+  <div class="campo"><label>&nbsp;</label><label class="cbx"><input type="checkbox" id="sCert"> certificada</label></div>
+</div>
+<div id="sSal"></div>
+</div>
+
+<div class="lab">
+<span class="rot">Laboratorio 8 · predicción</span>
+<h5>Antes de ver la salida del programa, prediga una</h5>
+<p style="font-size:15.5px">500 kg de <code>PERGAMINO</code> con humedad 11,5 y malla 15, sin certificación. Conviene hacerlo en el papel: 500 kg son exactamente cuatro cargas, cuatro cargas a 2.850.000 son 11.400.000, la humedad de 11,5 está medio punto sobre el umbral y penaliza un punto porcentual. ¿Cuánto paga?</p>
+<div class="ctl">
+  <div class="campo"><label>su predicción, en pesos</label><input type="text" id="pPred" size="11" placeholder="con o sin puntos"></div>
+  <div class="campo"><button id="pRun">comprobar</button></div>
+</div>
+<div id="pSal"></div>
+</div>
+
+<h4>La versión de partida, y por qué no está mal escrita</h4>
+<p>La versión con condicionales está en <code>codigo/02-estrategia/v1-condicionales/</code>, y hay que decir con claridad que <strong>no está mal escrita ni es un ejemplo de mal programador</strong>. Es lo que sale cuando había un solo tipo de café y apareció el segundo: agregar un <code>else if</code> fue más rápido que pensar, y esa decisión fue correcta ese día. El problema es acumulativo.</p>
+<div class="tabs" id="tabsCod">
+  <button data-c="v1" class="on">v1 · condicionales</button>
+  <button data-c="v2s">v2 · la interfaz y el servicio</button>
+  <button data-c="v2p">v2 · dos políticas</button>
+</div>
+<pre id="codBox"></pre>
+<p>Fíjese en lo que le pasó al método que calcula la plata en la versión con estrategias: <strong>quedó de dos líneas y no menciona ninguna fórmula</strong>. Y fíjese en <code>PoliticaEspecial</code>, que necesita la fórmula del pergamino y no la hereda: tiene un <code>PoliticaPergamino</code> adentro y lo usa. Esa decisión —composición y no herencia— está tomada a propósito y es la segunda de las dos trampas del taller.</p>
+
+<div class="lab">
+<span class="rot">Laboratorio 9 · las dos versiones, línea por línea</span>
+<h5>Las cuatro muestras del ejemplo, por los dos caminos</h5>
+<p style="font-size:15.5px">Es el momento decisivo del bloque y conviene predecir antes de oprimir: ¿van a salir números distintos?</p>
+<div class="ctl"><button id="vRun">correr las dos versiones</button></div>
+<div id="vSal"></div>
+</div>
+
+<h4>Cuándo Strategy es sobre-ingeniería</h4>
+<p>Antes de seguir hay que decir lo contrario, porque quien aprende un patrón el miércoles lo aplica en todo el viernes. <strong>Si la única diferencia entre los tres tipos de café fuera una constante, esto sería sobre-ingeniería y un <code>Map&lt;String, BigDecimal&gt;</code> de tres entradas bastaría.</strong> Cinco clases para guardar tres números es peor que un <code>if</code>, no mejor.</p>
+<p>Strategy se gana el sueldo aquí por una razón concreta, y es la última columna de la tabla de arriba: las tres fórmulas <strong>miran datos distintos de la muestra</strong>. El pergamino mira la humedad, el excelso la ignora y mira la malla, el especial mira la humedad y además la certificación. Son tres conjuntos distintos de campos —{humedad}, {malla}, {humedad, certificada}— y no tres constantes distintas. No hay tabla de constantes que exprese eso; hay tres algoritmos. Ese es el criterio para decidir si aplicar el patrón, y es una pregunta razonable en un parcial —de hecho es la pregunta 10 del módulo 9, y también la tercera pregunta escrita del taller—.</p>
+</section>
+
+<!-- ================= M4 ================= -->
+<section class="mod" id="m4" data-t="El punto de cableado" data-h="Bloque 4 · Quién decide cuál estrategia: el punto de cableado">
+<blockquote><p>Este módulo es el bloque 4 de la clase, y es donde se mide lo que el módulo anterior dejó pendiente. La pregunta es una sola: <strong>¿cuánto cuesta agregar un cuarto tipo de café en cada diseño?</strong> No se responde razonando; se responde haciéndolo y mirando el <code>diff</code>. Esa es la mitad que le toca a usted, y es el taller.</p></blockquote>
+
+<p>Lo que sí se hace aquí es la comparación estructural de las dos carpetas, que es distinta y también dice cosas. Esta es la salida real del comando, ejecutado sobre el código de la sesión:</p>
+<pre class="dif">$ diff -rq v1-condicionales v2-estrategia
+Files v1-condicionales/LiquidacionService.java and v2-estrategia/LiquidacionService.java differ
+Files v1-condicionales/Main1.java and v2-estrategia/Main1.java differ
+Only in v2-estrategia: PoliticaDeCalidad.java
+Only in v2-estrategia: PoliticaEspecial.java
+Only in v2-estrategia: PoliticaExcelso.java
+Only in v2-estrategia: PoliticaPergamino.java
+Only in v2-estrategia: Politicas.java</pre>
+<p>Dos archivos modificados y cinco creados. <strong>Y aquí hay que tener el mismo cuidado con las unidades que en la sesión 1</strong>: de los dos modificados, <code>Main1</code> es cableado y datos de prueba, no lógica de negocio. El archivo que calcula plata es uno solo, <code>LiquidacionService</code>, y lo que le pasó es que perdió las tres fórmulas. Contar «dos archivos» y contar «un archivo de negocio» son dos medidas distintas del mismo cambio, y la segunda es la que importa.</p>
+
+<h4>El archivo nuevo que merece atención</h4>
+<p>Es <code>Politicas.java</code>, porque es donde se fue el conocimiento que salió del cálculo. Alguien tiene que saber que existen tres políticas y cuál corresponde a cada código de tipo, y ese alguien ahora es esta clase de veinticinco líneas cuyo trabajo entero es una tabla y una búsqueda. <strong>Las veinticinco son las de abajo, no las del archivo</strong>: <code>Politicas.java</code> tiene cincuenta y dos líneas, de las cuales veinticuatro son el comentario que explica por qué el constructor no recibe las políticas por parámetro, y ese comentario no cabe aquí. En el archivo del <code>codigo.zip</code> están las dos cosas.</p>
+<pre id="codPol"></pre>
+<p>Está escrita <strong>deliberadamente tonta</strong> —sin una sola fórmula adentro— para que quien la edite no pueda romper un cálculo por accidente. <strong>Ese es el valor arquitectónico del patrón: no eliminó el conocimiento, lo movió a un archivo donde equivocarse es barato.</strong></p>
+<p>Que el constructor no reciba las políticas por parámetro es una decisión, no un descuido, y conviene decirla en voz alta porque la alternativa se ve mejor. Un constructor <code>Politicas(PoliticaDeCalidad... politicas)</code> parece más flexible y de hecho es más fácil de probar, porque una prueba podría construir el objeto con una sola política en lugar de las tres. El costo es el que hoy pesa más: mueve la lista de las tres implementaciones a quien llame al constructor —aquí sería el <code>Main1</code>— y entonces el punto de cableado deja de estar en un archivo que se pueda señalar con el dedo y queda mezclado con los datos de prueba. <strong>El taller mide exactamente esa propiedad, así que el código de la sesión está escrito para que la propiedad exista.</strong></p>
+<p>Sobre el nombre hay que ser honesto, porque el catálogo GoF tiene un patrón llamado Factory Method y esto no es exactamente eso. Un Factory Method es un método que las subclases redefinen para decidir qué crear. <code>Politicas</code> no delega nada a subclases: construye las tres implementaciones en su propio constructor, las indexa por su código de tipo y las entrega cuando se le preguntan, así que se parece más al <em>service locator</em> que al Factory Method. <strong>Prefiero decir que este archivo se llama como se llama y hace lo que hace, antes que forzarle el nombre de un patrón del libro para que la clase quede más ordenada.</strong></p>
+<div class="aviso"><span class="rot">Queda anunciado para la sesión 3</span><p><strong>En la sesión 3 este archivo se borra.</strong> El contenedor de inyección de dependencias de Spring descubre las tres implementaciones por su cuenta y las entrega al servicio sin que nadie escriba la tabla. Cuando eso pase, la pregunta no es «qué cómodo» sino <strong>dónde quedó el conocimiento que estaba en este archivo</strong>, porque no desapareció: se mudó a un mecanismo que no se ve. Ahí es donde la inyección de dependencias empieza a ser una decisión arquitectónica y deja de ser una anotación.</p></div>
+
+<div class="lab">
+<span class="rot">Laboratorio 10 · la predicción del taller</span>
+<h5>Antes de hacer el taller, escriba su predicción</h5>
+<p style="font-size:15.5px">Va a agregar un cuarto tipo de café a las dos versiones y va a medir con <code>diff</code> cuánto costó cada una. Escriba <strong>ahora</strong>, antes de tocar código, cuántos archivos cree que se van a modificar y cuántos se van a crear en cada versión. Lo que escriba aquí no se corrige y no vale nota: sirve para que cuando vea el resultado sepa si le sorprendió, y esa sorpresa —o su ausencia— es material para la primera pregunta del informe.</p>
+<div class="ctl">
+  <div class="campo"><label>v1 · archivos modificados</label><input type="text" id="wr1m" size="4"></div>
+  <div class="campo"><label>v1 · creados</label><input type="text" id="wr1c" size="4"></div>
+  <div class="campo"><label>v2 · archivos modificados</label><input type="text" id="wr2m" size="4"></div>
+  <div class="campo"><label>v2 · creados</label><input type="text" id="wr2c" size="4"></div>
+  <div class="campo"><label>¿en cuál se toca el archivo que calcula la plata?</label><select id="wrq"><option value="">—</option><option>en v1</option><option>en v2</option><option>en las dos</option><option>en ninguna</option></select></div>
+</div>
+<div class="marca si" style="display:block">Su predicción queda guardada en esta pestaña y aparece en el comprobante del módulo 9, junto a las respuestas de la evaluación. <strong>La respuesta correcta no está en este recurso, y es a propósito</strong>: es lo que el taller le pide medir, y verla aquí le quitaría el ejercicio entero. La va a tener usted mismo, con un comando: en el reparto del módulo 7 el resultado aparece a los cuarenta y cinco minutos, cuando termina el tercer bloque.</div>
+</div>
+</section>
+
+<!-- ================= M5 ================= -->
+<section class="mod" id="m5" data-t="Singleton" data-h="Bloque 5 · Singleton, el patrón que hay que saber para no usarlo">
+<blockquote><p>Este módulo es el bloque 5 de la clase. Singleton está en la sesión por una razón distinta de los demás: es el patrón del catálogo que con más frecuencia se convierte en el defecto arquitectónico más caro de un sistema. Se enseña <strong>para reconocerlo y para saber por qué no usarlo</strong>, porque en la mayoría de los sistemas empresariales que uno hereda hay Singletons y casi siempre están donde más molestan.</p></blockquote>
+
+<p>Lo primero es abrir <code>PrecioDelDia.java</code> y decir en voz alta que <strong>esa clase está bien escrita</strong>: tiene el constructor privado, el campo estático y el <code>getInstance()</code> que crea la instancia la primera vez. Es el patrón del libro, sin errores.</p>
+<pre id="codPrecio"></pre>
+<p>El problema no se ve mirando esa clase; se ve mirando quién la usa. Es un punto pedagógico importante porque el reflejo natural es buscar el error en el archivo, y no está ahí. Hay una puerta, eso sí, y vale la pena señalarla: <code>cambiarPrecio</code> permite que <strong>cualquier parte del programa cambie el precio para todas las demás, y ninguna firma de método lo anuncia</strong>.</p>
+
+<h4>Primera consecuencia · las pruebas se pisan</h4>
+<p>Hay dos pruebas. Una comprueba la liquidación al precio normal y otra al precio de un día de alza. Ninguna de las dos está mal escrita.</p>
+<div class="lab">
+<span class="rot">Laboratorio 11 · la suite que depende del orden</span>
+<h5>Las mismas dos pruebas, en los dos órdenes</h5>
+<p style="font-size:15.5px">El estado global de este laboratorio es real: hay una única instancia en esta página, con su precio, y las dos pruebas la comparten igual que en Java. Corra el primer orden, después el segundo, <strong>y después vuelva a oprimir el primero</strong>. Ninguno de los dos botones reinicia nada entre corridas —el precio que quedó de la corrida anterior es el que entra a la siguiente, y la primera línea de la salida lo dice— porque esa es la parte que hay que ver. <strong>Aquí esta página se aparta a propósito del <code>Main1</code> de Java</strong>, y conviene decirlo: el programa de la clase sí llama a <code>reiniciarLoQueSePueda()</code> antes de correr el segundo orden, porque es un programa que se ejecuta una sola vez de arriba abajo y quiere mostrar los dos órdenes desde el mismo punto de partida. Una página se oprime en cualquier orden y las veces que uno quiera, así que ese reinicio escondería justamente el acarreo. Las cuatro líneas de resultado son las mismas que imprime el programa —se compararon letra por letra— porque la prueba de alza fija el precio ella misma; lo único que esta página agrega es la línea que dice con qué precio arrancó.</p>
+<div class="ctl">
+  <button id="tOrd1">1 · normal, y después alza</button>
+  <button id="tOrd2">2 · alza, y después normal</button>
+  <button class="sec" id="tReset">reiniciarLoQueSePueda()</button>
+</div>
+<div id="tSalP"></div>
+</div>
+<p>Ese 10.944.000 es el mismo número de la sesión 1, y no es casualidad: es la misma liquidación de 500 kg al 96%, calculada por un servicio que ahora está peor diseñado. <strong>Las dos pruebas pasan en un orden y una falla en el otro, sin que ninguna de las dos esté mal escrita.</strong> La de alza necesita otro precio y la única forma de conseguirlo es cambiarlo para todo el programa, así que deja el sistema modificado y no lo anuncia en ninguna parte.</p>
+<p>Esto es peor que un defecto: es una suite de pruebas verde que se vuelve roja el día que alguien reordena los métodos, agrega una prueba en medio o —y esto es lo que de verdad pasa— <strong>activa la ejecución en paralelo para que la compilación sea más rápida</strong>.</p>
+<p>Y sobre el remiendo, que es el que aparece en todos los proyectos con Singletons: el botón que dice <code>reiniciarLoQueSePueda()</code> se llama así porque <strong>no se puede reiniciar de verdad</strong>. El campo estático es privado y no hay forma de volverlo nulo; lo único que queda es devolver el valor a mano. Un <code>@BeforeEach</code> que llame a eso pone la suite verde y no arregla el diseño, y por qué no lo arregla es la pregunta 13 del módulo 9.</p>
+
+<h4>Segunda consecuencia · la dependencia que no se declara</h4>
+<p>Compare las dos firmas. <strong>El servicio de la sesión 1 recibía su fuente de precios por constructor y por eso bastaba leer la firma para saber de qué dependía. Este no recibe nada y parece no depender de nada</strong>, pero pide el precio en medio del cálculo, a un objeto global, cuyo estado depende de lo que cualquier otra parte del programa le haya hecho antes.</p>
+<div class="dos">
+<div><p style="font-size:14px;margin-bottom:6px"><span class="chip">sesión 1</span> la dependencia está en la firma</p><pre style="margin:0">public class LiquidacionService {
+    private final TarifaRepositorio tarifas;
+
+    public LiquidacionService(
+            TarifaRepositorio tarifas) {
+        this.tarifas = tarifas;
+    }
+    ...
+}</pre></div>
+<div><p style="font-size:14px;margin-bottom:6px"><span class="chip b">hoy</span> la misma dependencia, escondida</p><pre style="margin:0">public class LiquidacionService {
+
+    <i>// no hay constructor y no hay campos</i>
+
+    public BigDecimal liquidar(
+            BigDecimal kilos,
+            BigDecimal factor) {
+        <b>long precio = PrecioDelDia
+            .getInstance().precioPorCarga();</b>
+        ...
+    }
+}</pre></div>
+</div>
+<p>Es exactamente la misma dependencia de la sesión 1, escondida donde no se declara. Y como no se declara, <strong>no se puede sustituir</strong>: no hay manera de darle un precio fijo para probarlo.</p>
+
+<h4>Tercera consecuencia · no garantiza lo único que promete</h4>
+<div class="lab">
+<span class="rot">Laboratorio 12 · el entrelazado</span>
+<h5>Ocho hilos pidiendo <code>getInstance()</code> al mismo tiempo</h5>
+<p style="font-size:15.5px">Avance paso a paso y mire qué pasa con el <code>if (instancia == null)</code> de los ocho. Este laboratorio es una <strong>ilustración del entrelazado</strong> y no una medición: un navegador no tiene ocho hilos compartiendo esa variable. La medición real está debajo y viene del programa Java.</p>
+<div class="carril" id="hilos"></div>
+<div class="ctl">
+  <button id="hPaso">paso siguiente</button>
+  <button class="sec" id="hReset">volver al principio</button>
+</div>
+<div id="hSal"></div>
+</div>
+<p>La salida del programa Java, en la máquina de verificación:</p>
+<pre class="sal">3. Ocho hilos pidiendo getInstance() al mismo tiempo
+   instancias distintas creadas : 8</pre>
+<p>El chequeo de <code>if (instancia == null)</code> no es atómico: los ocho hilos lo evalúan antes de que ninguno termine de construir, y los ocho construyen. <strong>Ese número cambia entre corridas.</strong> En treinta corridas seguidas de la máquina de verificación, que tiene dos núcleos, estuvo siempre entre 7 y 8 y nunca fue 1. Ese rango es lo único que vale publicar: con cuántas de las treinta sale cada valor depende de los núcleos de la máquina y de lo que esté corriendo al lado, así que un porcentaje sería un dato del computador de verificación vestido de propiedad del ejemplo.</p>
+<p>Lo que sí es del ejemplo es la comparación con las dos consecuencias anteriores: <strong>esas dos imprimen lo mismo todas las veces y esta no.</strong> Si en alguna corrida sale 1, no es que el código esté bien: es que esa corrida tuvo suerte, y ese es el punto entero. Un Singleton que produce ocho instancias en una corrida y siete en la siguiente sigue llamándose Singleton en el código, en los comentarios y en el documento de arquitectura.</p>
+<div class="aviso"><span class="rot">Una confesión, antes de que alguien la encuentre</span><p>Hay un <code>Thread.sleep(50)</code> en el constructor de <code>ConfiguracionLenta</code>, y está puesto para que la carrera sea visible. <strong>El defecto no lo causa el retardo; el retardo solo lo hace probable.</strong> Un constructor que lee un archivo de configuración, abre una conexión o consulta el precio del día en un servicio del gremio tarda más que cincuenta milisegundos sin necesidad de ningún <code>sleep</code>, y ese es el caso real.</p></div>
+
+<h4>Qué se hace en su lugar</h4>
+<p>La alternativa no es un Singleton mejor escrito, aunque exista.</p>
+<table class="rep">
+<thead><tr><th>Arreglo</th><th>¿Resuelve la tercera consecuencia?</th><th>¿Las dos primeras?</th></tr></thead>
+<tbody>
+<tr><td>Sincronizar <code>getInstance()</code></td><td>sí</td><td>no, quedan intactas</td></tr>
+<tr><td>Inicialización estática del campo</td><td>sí</td><td>no, quedan intactas</td></tr>
+<tr><td>Declararlo como <code>enum</code></td><td>sí</td><td>no, quedan intactas</td></tr>
+<tr><td>Una sola instancia creada en el punto de cableado y entregada por constructor</td><td>sí</td><td>sí</td></tr>
+</tbody>
+</table>
+<p>Un Singleton perfectamente sincronizado sigue siendo estado global que las pruebas se pasan entre sí, y las dos primeras consecuencias son las que cuestan dinero. Lo que se hace es lo de la sesión 1: <strong>una sola instancia, creada en el punto de cableado, y entregada por constructor a quien la necesite</strong>. Que haya una sola instancia sigue siendo verdad; lo que cambia es quién lo garantiza. Antes lo garantizaba la clase, imponiéndoselo a todo el programa; ahora lo garantiza el lugar donde se arma el programa, que es el único sitio donde esa decisión se puede cambiar sin tocar lógica de negocio.</p>
+
+<h4>El «singleton» de Spring no es el patrón Singleton</h4>
+<p>Esto va a confundir a todo el mundo en la sesión 3, así que queda anunciado desde hoy: <strong>los objetos que administra Spring son, por omisión, uno solo por aplicación, y a ese comportamiento Spring lo llama «singleton»</strong>. Es la misma palabra y no es el mismo patrón. La diferencia es quién controla el ciclo de vida: en el patrón, la clase se lo impone al programa y nadie puede sustituirla; en Spring, el contenedor lo administra desde afuera y una prueba puede reemplazarlo. <strong>Esa distinción es material de parcial.</strong></p>
+<p>Lo que la distinción <strong>no</strong> dice, y conviene anotarlo al lado para no salir de aquí con la idea contraria, es que el contenedor cure el estado compartido. Un objeto administrado por Spring del que hay uno solo por aplicación y que tenga un campo mutable comparte ese campo con todo el programa exactamente igual que <code>PrecioDelDia</code>, y las pruebas se lo van a pasar unas a otras igual. Lo que cambia no es cuántas instancias hay ni si el estado se comparte: es que ese objeto <strong>se puede sustituir desde afuera</strong>.</p>
+<div class="lab">
+<span class="rot">Laboratorio 13 · la pregunta que reemplaza al patrón</span>
+<h5>¿Tiene campos que cambien después de construido?</h5>
+<p style="font-size:15.5px">Esa es la pregunta que hay que aprender a hacerle a un objeto del que hay uno solo, y no tiene nada que ver con el patrón. Cuatro objetos, todos administrados por Spring y todos con una sola instancia por aplicación. Marque los que comparten estado mutable con todo el programa.</p>
+<div id="camp"></div>
+<div class="ctl">
+  <button id="campVer">comprobar</button>
+  <button class="sec" id="campOtra" style="display:none">volver a intentar</button>
+</div>
+<div id="campRes"></div>
+</div>
+</section>
+
+<!-- ================= M6 ================= -->
+<section class="mod" id="m6" data-t="Taller 1" data-h="Bloque 6 · Taller 1, que empieza en clase">
+<blockquote><p>Este módulo es el bloque 6 de la clase. El enunciado completo, con lo que se entrega y cómo se califica, está en <a href="Enunciado-Taller-01.pdf">Enunciado-Taller-01.pdf</a>. Aquí está lo que hace falta para arrancar, y un comprobador de la fórmula para que no tenga que esperar la calificación para saber si la implementó bien.</p></blockquote>
+
+<p>Se trabaja <strong>en parejas</strong>, vence el <strong>miércoles 9 de septiembre a las 11:59 p.m.</strong>, vale el 30% del corte 1 y se discute en la sesión 3, que es ese mismo día. Está calibrado para <strong>hora y media de trabajo</strong>, y el enunciado reparte esos noventa minutos en cinco bloques. Si usted vio una versión anterior que decía «una hora», esa cifra estaba corta y se corrigió: no se recortó nada de lo que se evalúa, se corrigió el número.</p>
+
+<p>Lo que se pide es agregar un cuarto tipo de café a las dos versiones del código, <strong>medir con <code>diff</code> cuánto costó el cambio en cada una, y escribir qué significa esa diferencia</strong>. Fíjese en el verbo: medir. El trabajo no es programar una fórmula, que son veinte minutos, sino producir una medida del costo de un cambio y defender una interpretación de ella. Por eso el 60% de la nota está en el documento escrito y no en el código, y por eso conviene decirlo ahora: <strong>una entrega con el código funcionando y sin justificación escrita no pasa de 2.0.</strong></p>
+
+<h4>El reparto de la hora y media</h4>
+<p>El taller cabe en noventa minutos si se hace en este orden, y se desarma si se hace en otro. Es el mismo reparto que trae el enunciado y hay que leerlo con el último bloque en la cabeza, porque el orden no es negociable: <strong>el primer bloque parece perdido y es el que salva el taller</strong>, ya que correr las copias antes de tocarlas es lo que le dice que parte de algo que funciona, y entonces lo que se rompa después lo rompió usted.</p>
+<table>
+<thead><tr><th>Minutos</th><th>Qué</th></tr></thead>
+<tbody>
+<tr><td>10</td><td>Duplicar las dos carpetas y correr las copias <em>sin tocarlas todavía</em>, para saber que parten de algo que funciona</td></tr>
+<tr><td>25</td><td>Las dos implementaciones del orgánico</td></tr>
+<tr><td>10</td><td>Los cuatro comandos de medición, y pegar su salida en <code>medicion.txt</code></td></tr>
+<tr><td>40</td><td>La tabla y las cuatro respuestas, que es donde está el 60% de la nota</td></tr>
+<tr><td>5</td><td>Empacar el <code>.zip</code> y revisar que no quedaron <code>.class</code> adentro</td></tr>
+</tbody>
+</table>
+<p><strong>Si trabaja en Windows y todavía no tiene abierta una terminal de Unix, súmele quince minutos al primer bloque</strong> para abrir Git Bash, que vino con Git y por lo tanto ya está en su máquina. Los comandos del enunciado son de Unix y en Windows sirven tal como están escritos en Git Bash; el enunciado tiene una sección entera sobre eso.</p>
+
+<h4>El cuarto tipo de café</h4>
+<p>La cooperativa empieza a comprar <strong>café orgánico certificado</strong>, con el código de tipo <code>ORGANICO</code>. Parte del mismo esquema del pergamino —penaliza dos puntos porcentuales por cada punto de humedad sobre 11— pero con un <strong>piso de 0,90</strong> en lugar de 0,85, porque el orgánico se compra con un mínimo garantizado. Si la certificación está vigente suma una <strong>prima de 0,06</strong>, y el resultado nunca pasa de <strong>1,10</strong>.</p>
+<p>La fórmula está especificada y no la inventa cada pareja, por una razón: si cada uno usa números distintos las medidas no se pueden comparar entre entregas y el taller deja de tener respuesta.</p>
+<p>Dicho como expresión, que es lo que hay que implementar: el factor es el mayor entre 0,9000 y <code>1 − 0,02 × (humedad − 11)</code> redondeado a cuatro decimales, y si está certificada se le suma 0,0600 y se toma el menor entre eso y 1,1000. <strong>Escrita así, la expresión premia por debajo de 11 y no solo penaliza por encima</strong>, porque con humedad menor que 11 el exceso es negativo y la resta cambia de signo: a humedad 8,0 el factor da 1,0600, y ese mismo orgánico certificado llega al techo de 1,1000 y paga 12.540.000 por los mismos 500 kg. Puede comprobarlo ahora mismo moviendo el deslizador del laboratorio que sigue hasta 8,0. Y no es una rareza que le tocó a este taller: <strong>el pergamino que ya está en el código que usted recibió hace exactamente lo mismo</strong> y también imprime 1,0600 a humedad 8,0, porque las dos fórmulas pasan por el mismo <code>humedadBase</code>. Si le parece discutible que la cooperativa pague una prima por café más seco de lo que exige la norma, tiene razón, y eso es material para la cuarta pregunta del informe en lugar de algo que haya que arreglar en el código.</p>
+<p>Hay una consecuencia de eso que es mejor saber antes que después. Las cuatro comprobaciones que reparten el 40% del código usan solo la muestra obligatoria de humedad 14,0, que está por encima del umbral, así que <strong>una pareja que escriba esto con un condicional —penalizar si la humedad pasa de 11 y dejar el factor en 1,0000 si no— saca los cuarenta puntos completos y de todos modos discrepa del corrector por debajo de 11</strong>. El deslizador del laboratorio que sigue va de 8,0 a 20,0, o sea que la mitad de su recorrido está bajo el umbral; si compara su Java contra un caso propio ahí y los números no coinciden, esta es la razón, y no un error suyo que haya que buscar durante media hora.</p>
+
+<div class="lab">
+<span class="rot">Laboratorio 14 · comprobador de la fórmula del taller</span>
+<h5>¿Su Java está dando lo mismo que debería?</h5>
+<p style="font-size:15.5px">Ponga aquí los mismos datos que le esté pasando a su programa y compare. La muestra obligatoria del enunciado —500 kg, humedad 14,0, malla 15, certificada— es la que está cargada, y su factor sale exactamente 1,0000 a propósito, para que el número final se pueda verificar de cabeza.</p>
+<div class="ctl">
+  <div class="campo"><label>humedad · <span class="val" id="oHumV">14,0</span></label><input type="range" id="oHum" min="80" max="200" step="5" value="140"></div>
+  <div class="campo"><label>malla · <span class="val" id="oMalV">15</span></label><input type="range" id="oMal" min="12" max="24" step="1" value="15"></div>
+  <div class="campo"><label>kilos</label><input type="text" id="oKilos" value="500" size="9"></div>
+  <div class="campo"><label>&nbsp;</label><label class="cbx"><input type="checkbox" id="oCert" checked> certificada</label></div>
+</div>
+<div id="oSal"></div>
+</div>
+<div class="aviso"><span class="rot">Dos cosas que van a pasar</span><p>La primera arruina más entregas que ninguna otra: <strong>guarde las carpetas originales antes de tocar nada</strong>. Sin ellas no hay <code>diff</code>, sin <code>diff</code> no hay tabla, y sin tabla el 60% del taller se queda sin insumo. La segunda es la tentación de hacer que la política del orgánico <strong>herede</strong> de <code>PoliticaPergamino</code> para no repetir la fórmula de la humedad. Es defendible, y si la toma, defiéndala en el informe: el día que la cooperativa negocie el piso del pergamino, la política del orgánico va a cambiar sola sin que nadie lo haya pedido. Cualquiera de los dos caminos puede sacar el puntaje completo; lo que no lo saca es tomar el camino sin darse cuenta de que había dos.</p></div>
+<p>Y el error que se va a repetir, anunciado aquí para que aparezca menos: <strong>compilar las dos versiones al mismo directorio de salida</strong>. Las clases se llaman igual en las dos carpetas, la segunda compilación sobrescribe a la primera, y el resultado es una versión con condicionales que parece tener estrategias. Cada versión va a su propio directorio.</p>
+</section>
+
+<!-- ================= M7 ================= -->
+<section class="mod" id="m7" data-t="Cierre" data-h="Bloque 8 · Cierre y qué traer a la sesión 3">
+<blockquote><p>Este módulo es el bloque 8 de la clase: el resumen de la sesión en un párrafo, y lo que hay que tener listo el miércoles siguiente. Las cinco preguntas de autoevaluación están en el módulo 9, para contestarlas escribiendo.</p></blockquote>
+
+<h4>Resumen</h4>
+<p>Los patrones de diseño resuelven problemas que se repiten, y solo algunos tienen valor arquitectónico: los que deciden quién depende de quién. Antes de aplicar cualquiera de ellos al dinero hay que tener el tipo de dato correcto, porque <code>double</code> no representa 0,1 y eso produce dos clases de daño de distinto tamaño: la acumulación, que es el argumento clásico y resultó ser el débil —un millón de operaciones con 12,5 kg a 2.850.000 por 0,96 dieron una deriva de exactamente cero, y el mismo código con 37,3 kg a 2.871.450 por 0,9635 derivó 18,652954 pesos, así que lo que decide no es el volumen sino si los números de entrada caben exactos en binario; ese «a veces sí y a veces no» es justamente lo que hace que el defecto sobreviva años en producción—, y el redondeo en la frontera, que con una sola liquidación de 30,9 kg pagó un peso de menos y quedó invisible en un informe con dos decimales, porque el problema no está en el cálculo sino en el formato. <code>BigDecimal</code> lo resuelve y trae dos trampas propias que hay que saberse de memoria: construirlo desde <code>double</code> copia la basura del <code>double</code>, y <code>equals</code> compara la escala mientras <code>compareTo</code> compara el valor. Sobre eso, Strategy saca las tres fórmulas de calidad del método que calcula la plata y las pone en tres clases que ese método no conoce, con el resultado de que las dos versiones imprimen los mismos cuatro números y no se gana nada visible hoy; lo que se gana se mide en el costo del próximo cambio, que es el taller. El conocimiento que se sacó del cálculo no desapareció: se mudó a un punto de cableado deliberadamente tonto, que en la sesión 3 lo va a absorber el contenedor de Spring. Y Singleton, que es el único patrón que se enseñó para no usarlo, resultó no garantizar lo único que promete —ocho hilos piden la única instancia y salen entre siete y ocho, un número distinto de una corrida a otra— y, mucho peor que eso, esconder por dentro del método la misma dependencia que la sesión 1 había puesto en el constructor, con la consecuencia de que dos pruebas correctas pasan en un orden y una falla en el otro. De ahí sale la pregunta que reemplaza al patrón y que va a servir en la sesión 3 para el «singleton» de Spring, que es la misma palabra y no es lo mismo: lo que hay que preguntarle a un objeto del que hay uno solo no es cuántas instancias tiene, sino si tiene campos que cambien después de construido.</p>
+
+<h4>Qué traer a la sesión 3</h4>
+<p>Con el proyecto de Spring Boot y <code>./mvnw test</code> terminando en <code>BUILD SUCCESS</code> es suficiente; no hay nada nuevo que instalar. Quien salga de esta sesión sin eso tiene que resolverlo antes del miércoles siguiendo <code>00-Curso/Preparacion-del-Entorno.md</code>, y si algo falla, escribirme el jueves o el viernes <strong>y no el martes por la noche</strong>. Y hay que <strong>correrlo una vez más en la máquina con la que va a llegar al salón</strong>, aunque ya haya funcionado: un proyecto que compila en el computador de la casa no sirve de nada el miércoles si el portátil que viene a clase es otro.</p>
+<p>Dos cosas más. La sesión 3 <strong>abre con el quiz 1</strong>, sobre las sesiones 1 y 2. Y el taller 1 vence a las 11:59 p.m. de ese mismo miércoles, dos horas y media después de que la clase termine, así que el orden natural de la semana es terminar el taller el fin de semana, usar el lunes y el martes para las preguntas que salgan de haberlo hecho, y <strong>llegar a la sesión 3 con el informe ya escrito</strong>. Si la discusión de esa clase le cambia la opinión, cámbiela y diga en el informe qué se la cambió: eso no baja la nota, la sube.</p>
+<p>Para quien quiera adelantarse, la lectura útil no es sobre patrones sino sobre lo que viene: el capítulo de inyección de dependencias de la documentación de Spring Framework. <strong>Cuidado con el material viejo</strong>, y esta advertencia vale para todo el semestre: cualquier tutorial de Spring anterior a 2025 está escrito contra Spring Framework 6 y no 7, y cualquiera anterior a 2023 usa <code>javax.persistence</code> donde hoy va <code>jakarta.persistence</code>. La forma de reconocer material viejo es mirar la fecha del artículo antes de mirar el código.</p>
+</section>
+
+<!-- ================= M8 ================= -->
+<section class="mod" id="m8" data-t="Evaluación" data-h="Módulo 9 · Evaluación">
+<blockquote><p>Esta es la evaluación del recurso. Tiene <strong>dieciséis preguntas de respuesta cerrada</strong>, que se califican aquí mismo y le dicen por qué la opción equivocada era tentadora, y las <strong>cinco preguntas abiertas de autoevaluación de la guía</strong>, que no se califican solas porque no tienen una respuesta que un programa pueda comparar. Al final se genera un comprobante descargable con todo.</p></blockquote>
+
+<p>Las dieciséis preguntas cubren los cinco bloques de contenido de la sesión, y no en partes iguales: dos del bloque 1, cinco del bloque 2, tres del 3, dos del 4 y cuatro del 5, porque el dinero y el Singleton son los que se malentienden más. <strong>El umbral es 12 de 16</strong>, y no es un número redondo por casualidad. Con 11 aciertos usted falló cinco, y cinco fallos ya casi no caben repartidos: de las 4.368 maneras de escoger cinco preguntas entre dieciséis, solo 240 —el 5,5%, una de cada dieciocho— ponen una en cada bloque distinto, y en las otras 4.128 hay por lo menos un bloque con dos. Con seis fallos ya no hay manera de repartirlos, porque son cinco bloques. Por eso el informe del final no le da solo el total, sino de qué módulo era cada pregunta que falló y en cuál se agruparon los fallos. Cada pregunta se califica en el momento en que la contesta y no se puede cambiar después, porque el valor de la retroalimentación está en leerla habiendo apostado.</p>
+<div class="aviso"><span class="rot">Antes de empezar</span><p><strong>Esta página no guarda nada.</strong> Si la cierra o la recarga, las respuestas y el comprobante se pierden. Contéstela de una sentada y descargue el comprobante al final. Y una advertencia sobre lo que esta evaluación es y no es: <strong>no reemplaza el quiz 1 de la sesión 3 ni vale nota</strong>. Es un termómetro para que usted sepa, antes del miércoles, qué le falta.</p></div>
+
+<div class="ctl" style="margin:20px 0 26px">
+  <div class="campo"><label>su nombre, para el comprobante</label><input type="text" id="qNom" size="30" placeholder="Nombre y apellido"></div>
+</div>
+
+<div id="quiz"></div>
+
+<div class="lab" id="cierreQuiz">
+<span class="rot">Resultado de las dieciséis</span>
+<div id="qRes"><p style="font-size:15.5px;color:var(--gray);margin:0">Contéstelas todas y aquí aparece el informe, con el mapa de qué módulo repasar por cada una que falle.</p></div>
+</div>
+
+<h4>Las cinco preguntas de autoevaluación</h4>
+<p>Estas son las cinco de la guía de la sesión, y son <strong>el temario del quiz 1</strong>: si puede contestarlas sin volver al material, está listo. No se califican solas porque piden un argumento, y un argumento no se compara con una cadena de texto. Lo que sí hace este recurso es meterlas en el comprobante, para que quede constancia de lo que usted creía saber antes de la clase.</p>
+<div id="abiertas"></div>
+
+<h4>El comprobante</h4>
+<p>El comprobante trae su nombre, la fecha, el puntaje, qué contestó en cada una de las dieciséis, la predicción del módulo 5 y las cinco respuestas escritas. Se descarga como un archivo de texto.</p>
+<div class="ctl">
+  <button id="cbGen">generar y descargar el comprobante</button>
+  <button class="sec" id="cbCopiar">copiar al portapapeles</button>
+</div>
+<div id="cbSal"></div>
+<p style="font-size:15px;color:var(--gray)"><strong>Sobre el código de verificación que trae el comprobante</strong>, dicho con precisión para que nadie lo sobreestime: es una suma de comprobación calculada sobre el texto del comprobante, así que detecta que alguien lo editó de manera casual después de generarlo. <strong>No es una firma y no prueba autoría</strong>: quien tenga esta página puede generar un comprobante con cualquier nombre. Sirve para lo que sirve y no para más.</p>
+</section>
+</div>
+</main>
+</div>
+<div id="barra">
+  <span>Módulo <b id="bMod">1</b> de <b>9</b></span>
+  <span class="sep"></span>
+  <span id="bNota"></span>
+  <button class="sec" id="bAnt">← anterior</button>
+  <button id="bSig">siguiente →</button>
+</div>
+<script>
+'use strict';
+/* =====================================================================
+   1. ARITMETICA
+   ---------------------------------------------------------------------
+   Los double de este archivo son los double de Java: mismo IEEE-754,
+   mismas operaciones. Se usan tal cual, para demostrar el defecto.
+   El lado correcto de cada comparacion NO usa double: es una replica de
+   BigDecimal con enteros grandes y una escala. Verificada contra el Java
+   de la sesion en 18.200 casos y contra la salida completa de
+   DineroDemo.java. Ver el modulo 1, «Como se verifico».
+   ===================================================================== */
+function D(str){ str=String(str).trim(); let neg=str.startsWith('-'); if(neg||str.startsWith('+'))str=str.slice(1);
+  const dot=str.indexOf('.'); let digits,scale;
+  if(dot<0){digits=str;scale=0;} else {digits=str.slice(0,dot)+str.slice(dot+1); scale=str.length-dot-1;}
+  let u=BigInt(digits||'0'); if(neg)u=-u; return {u:u,s:scale}; }
+const P10=function(n){return 10n**BigInt(n);};
+function align(a,b){const s=Math.max(a.s,b.s);return [{u:a.u*P10(s-a.s),s:s},{u:b.u*P10(s-b.s),s:s}];}
+function add(a,b){const p=align(a,b);return{u:p[0].u+p[1].u,s:p[0].s};}
+function sub(a,b){const p=align(a,b);return{u:p[0].u-p[1].u,s:p[0].s};}
+function mul(a,b){return{u:a.u*b.u,s:a.s+b.s};}
+function cmp(a,b){const p=align(a,b);return p[0].u<p[1].u?-1:(p[0].u>p[1].u?1:0);}
+function eq(a,b){return a.s===b.s&&a.u===b.u;}
+function max(a,b){return cmp(a,b)>=0?a:b;}
+function min(a,b){return cmp(a,b)<=0?a:b;}
+function divHalfUp(n,d){const neg=(n<0n)!==(d<0n);const an=n<0n?-n:n,ad=d<0n?-d:d;
+  let q=an/ad;const r=an%ad; if(r*2n>=ad)q+=1n; return neg?-q:q;}
+function setScale(a,s){ if(s===a.s)return{u:a.u,s:s}; if(s>a.s)return{u:a.u*P10(s-a.s),s:s};
+  return {u:divHalfUp(a.u,P10(a.s-s)),s:s}; }
+function divide(a,b,s){ const num=a.u*P10(b.s+s); const den=b.u*P10(a.s); return {u:divHalfUp(num,den),s:s}; }
+function plain(a){ const neg=a.u<0n; let d=(neg?-a.u:a.u).toString();
+  if(a.s===0)return (neg?'-':'')+d; while(d.length<=a.s)d='0'+d;
+  return (neg?'-':'')+d.slice(0,d.length-a.s)+'.'+d.slice(d.length-a.s); }
+/* division exacta, la que en Java lanza si el cociente es periodico */
+function gcd(a,b){a=a<0n?-a:a;b=b<0n?-b:b;while(b){const t=a%b;a=b;b=t;}return a;}
+function divExacta(a,b){
+  if(b.u===0n) throw new Error('/ by zero');
+  let n=a.u*P10(b.s), d=b.u*P10(a.s);
+  if(d<0n){n=-n;d=-d;}
+  const g=gcd(n,d); if(g>1n){n=n/g;d=d/g;}
+  let p=0,q=0,r=d;
+  while(r%2n===0n){r=r/2n;p++;}
+  while(r%5n===0n){r=r/5n;q++;}
+  if(r!==1n) throw new Error('Non-terminating decimal expansion; no exact representable decimal result.');
+  let k=Math.max(p,q);
+  const pref=a.s-b.s;
+  if(pref>k)k=pref;
+  return {u:n*P10(k)/d, s:k};
+}
+/* expansion decimal EXACTA de un double: lo que imprime new BigDecimal(double) */
+function exacto(x){
+  if(!isFinite(x))return String(x);
+  if(x===0)return '0';
+  const buf=new DataView(new ArrayBuffer(8)); buf.setFloat64(0,x);
+  const bits=(BigInt(buf.getUint32(0))<<32n)|BigInt(buf.getUint32(4));
+  const neg=(bits>>63n)===1n;
+  const expBits=Number((bits>>52n)&0x7FFn);
+  let mant=bits&0xFFFFFFFFFFFFFn, e;
+  if(expBits===0){e=-1074;}else{mant|=(1n<<52n);e=expBits-1075;}
+  let num,scale;
+  if(e>=0){num=mant<<BigInt(e);scale=0;}else{num=mant*(5n**BigInt(-e));scale=-e;}
+  let s=num.toString();
+  if(scale>0){ while(s.length<=scale)s='0'+s;
+    s=s.slice(0,s.length-scale)+'.'+s.slice(s.length-scale);
+    s=s.replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,''); }
+  return (neg?'-':'')+s;
+}
+/* representacion mas corta que redondea de vuelta al mismo double, en plano */
+function corta(x){ let s=String(x); if(!/e/i.test(s))return s;
+  const m=/^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(s);
+  const sign=m[1],ent=m[2],frac=m[3]||'',e=parseInt(m[4],10);
+  const digits=ent+frac, punto=ent.length+e;
+  if(punto<=0)return sign+'0.'+'0'.repeat(-punto)+digits;
+  if(punto>=digits.length)return sign+digits+'0'.repeat(punto-digits.length);
+  return sign+digits.slice(0,punto)+'.'+digits.slice(punto); }
+/* %.<n>f de Java sobre un double. Java no redondea el valor exacto del double:
+   parte de su representacion mas corta y rellena con ceros. Por eso %.20f de
+   0.9999999999999999 imprime ...99990000 y no ...98898. */
+function javaF(x,n){ if(!isFinite(x))return String(x);
+  const s=corta(x), neg=s.startsWith('-'), cuerpo=neg?s.slice(1):s;
+  const p=cuerpo.indexOf('.');
+  const ent=p<0?cuerpo:cuerpo.slice(0,p), frac=p<0?'':cuerpo.slice(p+1);
+  let out;
+  if(frac.length<=n) out=ent+(n?'.'+frac.padEnd(n,'0'):'');
+  else out=plain(setScale(D(cuerpo),n));
+  return (neg?'-':'')+out; }
+/* %.<n>f sobre un BigDecimal: ese si redondea el valor exacto, HALF_UP */
+function javaFD(d,n){ return plain(setScale(d,n)); }
+function miles(s){ return String(s).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+/* miles() pone coma porque replica la consola de Java, que imprime con
+   Locale.ROOT: va en las trazas, en las lineas que el Main1 tiene que imprimir
+   y en los literales de codigo. esp() pone punto y es la que va en la prosa de
+   la pagina, que esta escrita en espanol de Colombia. Son dos convenciones a
+   proposito y esta dicho en el modulo 1: mezclarlas sin avisar seria un error
+   feo en una sesion que trata justamente de separadores decimales. */
+function esp(s){ return String(s).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+/* esp() solo pone el punto de miles, porque casi toda cifra que aparece en la
+   prosa de esta pagina es entera -- pesos, kilos redondos, conteos --. Cuando
+   la cifra de prosa trae decimales hay que cambiar tambien el separador
+   decimal, y para eso esta espDec(): recibe el numero en formato de Java
+   -- punto decimal y sin separador de miles, que es lo que produce toFixed() --
+   y lo devuelve como se escribe en Colombia. Sin esto se cuela una frase como
+   «entre 0,1 y 120.0 kg», con las dos convenciones en el mismo renglon. */
+function espDec(s){ const p=String(s).split('.');
+  return esp(p[0])+(p.length>1?','+p[1]:''); }
+
+/* =====================================================================
+   2. LIQUIDACION  (las cuatro politicas de calidad)
+   ===================================================================== */
+const KPC=D('125'), PPC=D('2850000'), TECHO=D('1.1000'), UNO=D('1');
+function humedadBase(humedad,piso){ const exceso=sub(humedad,D('11'));
+  return max(setScale(sub(UNO,mul(exceso,D('0.02'))),4), D(piso)); }
+function factor(tipo,humedad,malla,cert){
+  if(tipo==='PERGAMINO') return humedadBase(humedad,'0.8500');
+  if(tipo==='EXCELSO'){ const sobre=D(String(malla-15));
+    return min(setScale(add(UNO,mul(sobre,D('0.015'))),4), TECHO); }
+  if(tipo==='ESPECIAL'){ let f=humedadBase(humedad,'0.8500');
+    if(cert) f=min(add(f,D('0.0800')),TECHO); return f; }
+  if(tipo==='ORGANICO'){ let f=humedadBase(humedad,'0.9000');
+    if(cert) f=min(add(f,D('0.0600')),TECHO); return f; }
+  throw new Error(tipo); }
+function valor(kilos,f){ return divide(mul(mul(kilos,PPC),f),KPC,0); }
+function pesos(d){ return miles(plain(d)); }
+
+/* traza de la cuenta del factor, linea por linea, en el orden del codigo Java */
+/* Rellena a la derecha hasta n caracteres. Las trazas se muestran en un bloque
+   monoespaciado que respeta los espacios, asi que el relleno es lo que pone los
+   dos puntos y los iguales en una sola columna. COL es la columna de esa
+   alineacion y ETQ la del igual interno; si una expresion se pasa de COL queda
+   un espacio y la linea se corre, que es preferible a partirla. */
+const COL=40, ETQ=14;
+function pd(s,n){ s=String(s); return s+' '.repeat(Math.max(1,n-s.length)); }
+function trazaFactor(tipo,humStr,malla,cert){
+  const L=[], hum=D(humStr);
+  L.push(pd('tipo',COL)+': '+tipo);
+  if(tipo==='EXCELSO'){
+    const sobre=D(String(malla-15));
+    const bruto=setScale(add(UNO,mul(sobre,D('0.015'))),4);
+    const f=min(bruto,TECHO);
+    L.push(pd('malla',COL)+': '+malla);
+    L.push(pd(pd('sobreMalla',ETQ)+'= '+malla+' - 15',COL)+'= '+plain(sobre));
+    L.push(pd(pd('premio',ETQ)+'= '+plain(sobre)+' x 0.015',COL)+'= '+plain(mul(sobre,D('0.015'))));
+    L.push(pd('1 + premio, setScale(4, HALF_UP)',COL)+'= '+plain(bruto));
+    L.push(pd('min('+plain(bruto)+', techo 1.1000)',COL)+'= '+plain(f)+'   <-- el techo '+(eq(f,TECHO)&&cmp(bruto,TECHO)>0?'SI':'no')+' se activo');
+    L.push('la humedad no entra en esta formula');
+    if(cert) L.push('la certificacion tampoco entra en esta formula');
+    return {L:L,f:f};
+  }
+  const piso = (tipo==='ORGANICO')?'0.9000':'0.8500';
+  const exceso=sub(hum,D('11'));
+  const pen=mul(exceso,D('0.02'));
+  const bruto=setScale(sub(UNO,pen),4);
+  const conPiso=max(bruto,D(piso));
+  // El estado del piso se decide una sola vez, aqui, y se devuelve. Antes la
+  // linea de la traza lo decidia con cmp(bruto,piso)<0 y el aviso del
+  // laboratorio con cmp(f,piso)===0, y los dos criterios no son el mismo: hay
+  // un caso frontera -- humedad 18,5 en el pergamino, 16,0 en el organico -- en
+  // el que la formula cae exactamente sobre el piso. Ahi max() devuelve el
+  // valor del piso sin haber corregido nada, y con los criterios separados la
+  // traza decia "el piso no se activo" mientras el aviso decia "el piso esta
+  // activo". No es un detalle de redaccion: es la humedad en la que hay que
+  // pararse para entender que hace un max, y no puede aparecer contada de dos
+  // maneras en la misma pantalla.
+  const cmpPiso=cmp(bruto,D(piso));
+  const pisoEstado=(cmpPiso<0)?'activo':((cmpPiso===0)?'frontera':'no');
+  L.push(pd('humedad',COL)+': '+plain(hum));
+  L.push(pd(pd('exceso',ETQ)+'= '+plain(hum)+' - 11',COL)+'= '+plain(exceso));
+  L.push(pd(pd('penalizacion',ETQ)+'= '+plain(exceso)+' x 0.02',COL)+'= '+plain(pen));
+  L.push(pd('1 - penalizacion, setScale(4, HALF_UP)',COL)+'= '+plain(bruto));
+  L.push(pd('max('+plain(bruto)+', piso '+piso+')',COL)+'= '+plain(conPiso)+'   <-- '
+    +(pisoEstado==='activo'?'el piso SI se activo'
+      :(pisoEstado==='frontera'?'el piso quedo justo, no corrigio':'el piso no se activo')));
+  let f=conPiso;
+  if(tipo==='ESPECIAL'||tipo==='ORGANICO'){
+    const prima=(tipo==='ESPECIAL')?'0.0800':'0.0600';
+    if(cert){ const sumado=add(conPiso,D(prima)); f=min(sumado,TECHO);
+      L.push('certificada = true, prima '+prima);
+      L.push(pd('min('+plain(sumado)+', techo 1.1000)',COL)+'= '+plain(f)+'   <-- el techo '+(cmp(sumado,TECHO)>0?'SI se activo':'no se activo'));
+    } else { L.push('certificada = false, no hay prima'); }
+  } else if(cert){ L.push('la certificacion no entra en la formula del pergamino'); }
+  return {L:L,f:f,pisoEstado:pisoEstado};
+}
+function trazaValor(L,kilosStr,f){
+  const k=D(kilosStr), v=valor(k,f);
+  L.push('');
+  L.push(pd('kilos',COL)+': '+plain(k));
+  L.push(plain(k)+' x 2850000 x '+plain(f)+' / 125, HALF_UP');
+  L.push(pd('paga',COL)+'= '+pesos(v));
+  return v;
+}
+
+/* =====================================================================
+   3. UTILIDADES
+   ===================================================================== */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function lineasPre(txt){ return String(txt).split('\n').map(function(l){
+    return '<span class="l">'+esc(l)+'</span>'; }).join(''); }
+function pre(txt,cls){ return '<pre class="'+(cls||'sal')+'">'+lineasPre(txt)+'</pre>'; }
+function pasos(lineas){ return '<div class="pasos">'+lineas.map(function(l){
+    return esc(l).replace(/(&lt;--[^<]*)$/,'<span class="r">$1</span>'); }).join('<br>')+'</div>'; }
+function marca(ok,html){ return '<div class="marca '+(ok?'si':'no')+'">'+html+'</div>'; }
+
+/* Los <pre> que ya venian escritos en el documento traen texto plano; se
+   reparten en lineas para que hereden la misma sangria francesa que los que
+   genera pre(). Se salta el que tenga hijos: si algun dia un <pre> trae
+   marcado por dentro, este paso lo deja como esta en vez de borrarselo. */
+document.querySelectorAll('pre').forEach(function(el){
+  if(el.children.length) return;
+  el.innerHTML=lineasPre(el.textContent.replace(/^\n/,'').replace(/\n$/,''));
+});
+function numero(s){ const t=String(s).replace(/[.,\s_']/g,''); return /^\d+$/.test(t)?t:null; }
+function decimalValido(s){ return /^-?\d+(\.\d+)?$/.test(String(s).trim()); }
+
+/* =====================================================================
+   4. NAVEGACION
+   ===================================================================== */
+const mods=Array.prototype.slice.call(document.querySelectorAll('section.mod'));
+mods.forEach(function(s){
+  const h=document.createElement('h3');
+  h.textContent=s.dataset.h; h.style.marginTop='0';
+  s.insertBefore(h,s.firstChild);
+});
+const nav=$('nav'); let actual=-1;
+mods.forEach(function(s,i){
+  const a=document.createElement('a'); a.href='#'+s.id;
+  const n=document.createElement('span'); n.className='n'; n.textContent=String(i+1);
+  a.appendChild(n); a.appendChild(document.createTextNode(s.dataset.t));
+  a.addEventListener('click',function(ev){ ev.preventDefault(); ir(i); });
+  nav.appendChild(a);
+});
+function ir(i,ancla){
+  if(i<0||i>=mods.length) return;
+  actual=i;
+  mods.forEach(function(s,j){ s.classList.toggle('abierto',j===i); });
+  const links=nav.querySelectorAll('a');
+  for(let j=0;j<links.length;j++){
+    links[j].classList.toggle('aqui',j===i);
+    if(j<i) links[j].classList.add('visto');
+  }
+  $('bMod').textContent=String(i+1);
+  $('bAnt').disabled=(i===0);
+  $('bSig').disabled=(i===mods.length-1);
+  $('bSig').textContent=(i===mods.length-2)?'evaluación →':'siguiente →';
+  if(ancla){ const el=$(ancla); if(el){ el.scrollIntoView(); return; } }
+  window.scrollTo(0,0);
+}
+$('bAnt').addEventListener('click',function(){ ir(actual-1); });
+$('bSig').addEventListener('click',function(){ ir(actual+1); });
+$('verFuente').addEventListener('click',function(ev){ ev.preventDefault(); ir(0,'comoSeVerifico'); });
+document.addEventListener('keydown',function(ev){
+  if(ev.target && /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)) return;
+  if(ev.key==='ArrowRight') ir(actual+1);
+  if(ev.key==='ArrowLeft') ir(actual-1);
+});
+/* =====================================================================
+   5. MODULO 2 · clasificador de patrones
+   ===================================================================== */
+const CLASI=[
+ {t:'Sacar las tres fórmulas de calidad del método que calcula el pago y ponerlas en tres clases que implementan una interfaz que ese método conoce.',
+  r:'arq',
+  por:'El método que multiplica pesos dejó de depender de las fórmulas. Si mañana cambio de opinión sobre cómo se calcula el factor del excelso, el archivo del dinero no se enteró. Eso es exactamente «decidir quién depende de quién».'},
+ {t:'Usar Builder para construir la <code>Muestra</code>, que tiene cinco campos y en el futuro va a tener nueve, para no escribir un constructor de nueve parámetros.',
+  r:'local',
+  por:'Es un buen patrón y no es arquitectura. Builder es tentador porque está en el catálogo GoF y sale en toda entrevista de trabajo, pero pase la prueba del criterio: si mañana lo quita, cambia una clase y ningún otro archivo se enteró.'},
+ {t:'Poner el precio del día en un <code>PrecioDelDia.getInstance()</code> global al que cualquier parte del programa le puede cambiar el valor.',
+  r:'arq',
+  por:'Tiene valor arquitectónico, y para mal: decide que todo el programa dependa de un objeto que ninguna firma de método declara. El módulo 6 mide lo que eso cuesta. Que un patrón sea arquitectónico no significa que sea bueno.'},
+ {t:'Usar Iterator para recorrer las muestras de una entrega sin exponer que por dentro son un arreglo.',
+  r:'local',
+  por:'Local. Es la definición de encapsulamiento bien hecho y no mueve ninguna dependencia entre partes del sistema: quien recorre ya dependía de la colección antes y después.'},
+ {t:'Decidir que el objeto <code>Politicas</code> se construya en el <code>Main1</code> y se le entregue al servicio por constructor, en vez de que el servicio lo cree.',
+  r:'arq',
+  por:'Arquitectónico, y es el bloque 4 de esta sesión. Decide dónde vive el conocimiento de que las políticas existen, y por lo tanto quién tiene que cambiar cuando aparezca una nueva.'}
+];
+function pintaClasi(){
+  $('clasi').innerHTML=CLASI.map(function(c,i){
+    return '<div class="preg" data-i="'+i+'"><p class="num">Caso '+(i+1)+'</p><p>'+c.t+'</p>'
+      +'<div class="opciones">'
+      +'<label class="op"><input type="radio" name="cl'+i+'" value="local"><span><b>Local.</b> Si cambio de opinión, cambia una clase y nadie más se entera.</span></label>'
+      +'<label class="op"><input type="radio" name="cl'+i+'" value="arq"><span><b>Arquitectónico.</b> Decide quién depende de quién.</span></label>'
+      +'</div></div>';
+  }).join('');
+  $('clasi').querySelectorAll('.op input').forEach(function(inp){
+    inp.addEventListener('change',function(){
+      const cont=inp.closest('.opciones');
+      cont.querySelectorAll('.op').forEach(function(o){ o.classList.remove('elegida'); });
+      inp.closest('.op').classList.add('elegida');
+    });
+  });
+  $('clasiRes').innerHTML=''; $('clasiVer').style.display=''; $('clasiVer').disabled=false;
+  $('clasiOtra').style.display='none';
+}
+pintaClasi();
+$('clasiVer').addEventListener('click',function(){
+  let sinResponder=0, aciertos=0;
+  CLASI.forEach(function(c,i){
+    const sel=$('clasi').querySelector('input[name="cl'+i+'"]:checked');
+    const bloque=$('clasi').querySelector('.preg[data-i="'+i+'"]');
+    if(!sel){ sinResponder++; return; }
+    const ok=(sel.value===c.r);
+    if(ok) aciertos++;
+    bloque.querySelectorAll('.op').forEach(function(o){
+      const v=o.querySelector('input').value;
+      o.classList.remove('elegida');
+      if(v===c.r) o.classList.add('ok');
+      else if(v===sel.value) o.classList.add('err');
+      o.querySelector('input').disabled=true;
+    });
+    const e=document.createElement('div');
+    e.className='expl'+(ok?'':' mal');
+    e.innerHTML='<b>'+(ok?'Bien.':'No.')+'</b> '+c.por;
+    bloque.appendChild(e);
+  });
+  if(sinResponder>0){
+    $('clasiRes').innerHTML=marca(false,'Faltan <b>'+sinResponder+'</b> casos por responder. Los que ya contestó quedaron corregidos.');
+  } else {
+    $('clasiRes').innerHTML=marca(aciertos>=4,'<b>'+aciertos+' de 5.</b> '+(aciertos>=4
+      ? 'El criterio quedó. Lo que va a hacer el resto de la sesión es aplicarlo tres veces sobre el mismo código.'
+      : 'Vuelva a leer el criterio del recuadro de arriba y note que la pregunta no es si el patrón es bueno: es cuántos archivos se enteran si cambio de opinión.'));
+    $('clasiVer').disabled=true; $('clasiOtra').style.display='';
+  }
+});
+$('clasiOtra').addEventListener('click',pintaClasi);
+
+/* =====================================================================
+   6. MODULO 3 · el dinero
+   ===================================================================== */
+/* --- laboratorio 2: el bloque 1 de DineroDemo --- */
+$('d1Run').addEventListener('click',function(){
+  const L=[];
+  L.push('1. La suma que todo el mundo cree que da 0.3');
+  L.push('   0.1 + 0.2         = '+(0.1+0.2));
+  L.push('   ¿es igual a 0.3?  = '+(0.1+0.2===0.3));
+  L.push('   con BigDecimal    = '+plain(add(D('0.1'),D('0.2'))));
+  L.push('   ¿es igual a 0.3?  = '+eq(add(D('0.1'),D('0.2')),D('0.3')));
+  let diez=0.0; for(let i=0;i<10;i++) diez+=0.1;
+  L.push('   sumar 0.1 diez veces = '+javaF(diez,20));
+  L.push('   ¿es igual a 1.0?     = '+(diez===1.0));
+  const s=$('d1Sal'); s.innerHTML=lineasPre(L.join('\n')); s.style.display='';
+  $('d1Nota').style.display='';
+});
+
+/* --- laboratorio 3: la frontera de redondeo --- */
+function corridaFrontera(kStr,fStr,pStr){
+  const kilos=D(kStr), precio=D(pStr), f=D(fStr);
+  /* El orden de estas dos lineas es el de LiquidacionService y no es cosmetico:
+     se multiplica todo y se divide una sola vez al final. divExacta es la
+     division sin escala de Java, la que lanza cuando el cociente es periodico;
+     dividiendo por 125 no puede lanzar, porque 125 es 5 al cubo. Asi el rotulo
+     «valor exacto» que se imprime tres lineas mas abajo es cierto por
+     construccion y no de casualidad. */
+  const bruto=divExacta(mul(mul(kilos,precio),f),KPC);
+  /* Java hace setScale(10) aqui, para alinear la cifra con el %.10f del double.
+     Ese setScale va sin modo de redondeo, o sea que lanza si el valor exacto
+     necesita mas de diez decimales; aqui los kilos los teclea el usuario, asi
+     que puede pasar de verdad. Antes que reventar la pagina o, mucho peor, que
+     redondear en silencio debajo del rotulo «valor exacto», se muestran los
+     decimales que el valor exacto necesite. */
+  const ex=bruto.s>=10?bruto:setScale(bruto,10);
+  const pagoExacto=setScale(bruto,0);
+  /* El otro orden posible, el que sale al traducir la formula hablada: pasar los
+     kilos a cargas primero, con escala 6, y multiplicar despues. Da el mismo peso
+     mientras los kilos tengan tres decimales o menos, y otro peso cuando tienen
+     cuatro. Se calcula siempre para poder avisar cuando se separen. */
+  const primero=setScale(mul(mul(divide(kilos,KPC,6),precio),f),0);
+  const conDouble=(parseFloat(kStr)/125.0)*parseFloat(pStr)*parseFloat(fStr);
+  const pagoDouble=Math.round(conDouble);
+  const dif=sub(pagoExacto,D(String(pagoDouble)));
+  return {ex:ex,pagoExacto:pagoExacto,primero:primero,conDouble:conDouble,pagoDouble:pagoDouble,dif:dif};
+}
+function pintaFrontera(){
+  const kStr=$('fKilos').value.trim(), fStr=$('fFactor').value.trim(), pStr=$('fPrecio').value.trim();
+  if(!decimalValido(kStr)||!decimalValido(fStr)||!decimalValido(pStr)){
+    $('fSal').innerHTML=marca(false,'Los tres valores tienen que ser números decimales con punto, sin separador de miles. Por ejemplo <code>30.9</code>, <code>0.9625</code> y <code>2850000</code>.');
+    return;
+  }
+  const r=corridaFrontera(kStr,fStr,pStr);
+  const L=[];
+  L.push('2. Una entrega de '+kStr+' kg, factor '+fStr+', a '+miles(pStr)+' la carga');
+  L.push('   valor exacto              : '+plain(r.ex));
+  L.push('   el double en el informe   : '+javaF(r.conDouble,2)+'   <-- aqui nadie ve nada');
+  L.push('   el double con 10 decimales: '+javaF(r.conDouble,10));
+  L.push('   el double, de verdad      : '+exacto(r.conDouble));
+  L.push('   BigDecimal, HALF_UP       : '+plain(r.pagoExacto));
+  L.push('   double, Math.round        : '+r.pagoDouble);
+  L.push('   se le pago de menos       : '+plain(r.dif));
+  const difCero=(r.dif.u===0n);
+  let html=pre(L.join('\n'));
+  if(difCero){
+    html+=marca(true,'En este caso los dos caminos coinciden. <b>Que coincidan no es una garantía</b>: el laboratorio que sigue busca los casos donde no coinciden, y son más frecuentes de lo que parece.');
+  } else {
+    html+='<p class="grande mal">'+plain(r.dif)+(cmp(r.dif,D('1'))===0?' peso':' pesos')+' de diferencia</p>';
+    html+=marca(false,'Y ahí está lo importante: el informe con dos decimales muestra <code>'+javaF(r.conDouble,2)+'</code>, que se ve perfecto. El defecto no está en el cálculo, está en que el formato lo tapa. Un caficultor que rehace la cuenta a mano tiene razón y el sistema no tiene con qué contradecirlo.');
+  }
+  /* El segundo aviso, que aparece solo cuando los kilos que tecleó el usuario
+     tienen cuatro decimales o más. No habla del double: los dos números que
+     compara son de BigDecimal, y es la misma cuenta escrita en los dos órdenes
+     posibles. Es el bloque 6 de DineroDemo.java, disparado por el dato en lugar
+     de contado. */
+  if(cmp(r.primero,r.pagoExacto)!==0){
+    /* El arranque de la frase depende de si el aviso de arriba dijo que los dos
+       caminos coincidían: si lo dijo, hablar de «una segunda diferencia» suena a
+       que hubo una primera y contradice lo que el estudiante acaba de leer. */
+    const arranque=difCero
+      ? 'Y aunque el <code>double</code> y el <code>BigDecimal</code> hayan coincidido aquí, <b>esta corrida sí esconde una diferencia</b>, y tampoco es culpa del <code>double</code>'
+      : 'Hay una segunda diferencia en esta corrida y <b>esta no es culpa del <code>double</code></b>';
+    html+=marca(false,arranque+': los dos números que siguen son de <code>BigDecimal</code>. Pasar los kilos a cargas primero, con escala 6, y multiplicar después da <code>'+miles(plain(r.primero))+'</code>; multiplicar todo y dividir una sola vez al final, que es lo que hace este programa y lo que hace <code>LiquidacionService</code>, da <code>'+miles(plain(r.pagoExacto))+'</code>. Con kilos de tres decimales o menos los dos órdenes coinciden siempre, porque dividir por 125 es multiplicar por 8 y dividir por 1000 y eso cabe exacto en seis decimales; con cuatro ya no cabe, la escala 6 redondea, y el peso cambia. <b>El tipo de dato correcto no le ahorra a nadie la decisión de dónde se redondea</b>, solo la hace visible: cada división es una oportunidad de redondear y la única inevitable es la última.');
+  }
+  $('fSal').innerHTML=html;
+}
+['fKilos','fFactor','fPrecio'].forEach(function(id){
+  $(id).addEventListener('keydown',function(ev){ if(ev.key==='Enter') pintaFrontera(); });
+});
+$('fRun').addEventListener('click',pintaFrontera);
+$('fReset').addEventListener('click',function(){
+  $('fKilos').value='30.9'; $('fFactor').value='0.9625'; $('fPrecio').value='2850000';
+  pintaFrontera(); $('fBusca').innerHTML='';
+});
+$('fBuscar').addEventListener('click',function(){
+  const fStr=$('fFactor').value.trim(), pStr=$('fPrecio').value.trim();
+  if(!decimalValido(fStr)||!decimalValido(pStr)){ $('fBusca').innerHTML=marca(false,'Arregle primero el factor y el precio.'); return; }
+  const hall=[]; let mirados=0;
+  for(let i=1;i<=1200 && hall.length<8;i++){
+    const kStr=(i/10).toFixed(1); mirados++;
+    const r=corridaFrontera(kStr,fStr,pStr);
+    if(r.dif.u!==0n) hall.push({k:kStr,dif:plain(r.dif),bd:plain(r.pagoExacto),db:r.pagoDouble,inf:javaF(r.conDouble,2)});
+  }
+  if(hall.length===0){
+    $('fBusca').innerHTML=marca(true,'Con este factor y este precio no aparece ninguna diferencia entre 0,1 y '+espDec((mirados/10).toFixed(1))+' kg. <b>Eso es justamente lo peligroso</b>: un sistema puede pasar meses sin producir un solo reclamo y descuadrar el día que cambia el factor. Pruebe con el factor <code>0.9625</code>.');
+    return;
+  }
+  /* Las cinco celdas de cada fila van dentro de <code>, y no es decoracion.
+     Los cinco valores estan en la convencion de Java -- punto decimal y coma
+     de miles --, porque salen del mismo motor que imprime las trazas; la prosa
+     de esta pagina usa la contraria. Es una tabla de tipografia normal, asi que
+     sin la marca de codigo un «6,584» de la columna de la diferencia se lee en
+     Colombia como seis pesos con coma decimal: este es el unico sitio de la
+     pagina donde las dos lecturas eran plausibles a la vez, y ademas es el
+     peor sitio posible, porque la tabla existe para hablar de separadores. La
+     frase de arriba lo dice con palabras y no solo con el formato. */
+  let t='<table><thead><tr><th>kilos</th><th>BigDecimal</th><th>double</th><th>diferencia</th><th>lo que muestra el informe</th></tr></thead><tbody>';
+  hall.forEach(function(h){ t+='<tr><td><code>'+h.k+'</code></td><td><code>'+miles(h.bd)+'</code></td><td><code>'+miles(String(h.db))+'</code></td><td><b><code>'+miles(h.dif)+'</code></b></td><td><code>'+h.inf+'</code></td></tr>'; });
+  t+='</tbody></table>';
+  $('fBusca').innerHTML='<p style="font-size:15.5px">Barriendo los kilos de 0,1 en 0,1 con el factor <code>'+fStr+'</code>, las primeras entregas donde los dos caminos se separan son estas. Su navegador acabó de revisar '+esp(String(mirados))+' casos. <b>La tabla está en la convención de Java</b>, igual que la consola: punto decimal y coma de miles.</p>'+t
+    +marca(false,'Ninguna de estas diferencias se ve en un informe con dos decimales, y ninguna viene de acumular nada: <b>cada una es una sola liquidación</b>.');
+});
+
+/* --- laboratorio 4: la acumulacion --- */
+function acumular(kStr,pStr,fStr,n){
+  const una=mul(mul(divide(D(kStr),KPC,6),D(pStr)),D(fStr));
+  const totalExacto=mul(una,D(String(n)));
+  const unaD=(parseFloat(kStr)/125.0)*parseFloat(pStr)*parseFloat(fStr);
+  let totalDouble=0.0;
+  for(let i=0;i<n;i++) totalDouble+=unaD;
+  const deriva=sub(D(exacto(totalDouble)),totalExacto);
+  return {una:una,totalExacto:totalExacto,totalDouble:totalDouble,deriva:deriva};
+}
+function correAcumular(){
+  const kStr=$('aKilos').value.trim(), pStr=$('aPrecio').value.trim(), fStr=$('aFactor').value.trim();
+  const nTxt=numero($('aN').value);
+  if(!decimalValido(kStr)||!decimalValido(pStr)||!decimalValido(fStr)||!nTxt){
+    $('aSal').innerHTML=marca(false,'Los tres primeros son decimales con punto y las repeticiones un entero.'); return; }
+  const n=parseInt(nTxt,10);
+  if(n<1||n>5000000){ $('aSal').innerHTML=marca(false,'Las repeticiones tienen que estar entre 1 y 5.000.000. Por encima de eso el navegador se queda pensando y no se aprende nada nuevo.'); return; }
+  $('aSal').innerHTML='<p style="font-size:15.5px;color:var(--gray)">sumando '+esp(String(n))+' veces…</p>';
+  window.setTimeout(function(){
+    const r=acumular(kStr,pStr,fStr,n);
+    const L=[];
+    L.push('   '+kStr+' kg · '+miles(pStr)+' · '+fStr);
+    L.push('     una entrega vale exactamente : '+plain(r.una));
+    L.push('     total exacto                 : '+plain(r.totalExacto));
+    L.push('     total con double             : '+javaF(r.totalDouble,6));
+    L.push('     deriva                       : '+javaFD(r.deriva,6));
+    const cero=(setScale(r.deriva,6).u===0n);
+    let html=pre(L.join('\n'));
+    if(cero){
+      html+=marca(true,'<b>Deriva exactamente cero</b> después de '+esp(String(n))+' operaciones. Con estos números el <code>double</code> se comporta impecablemente, y por eso el argumento clásico de la acumulación es el <b>débil</b> de los dos: hay escenarios reales de la cooperativa donde no muestra nada. Un sistema así pasa las pruebas durante meses.');
+    } else {
+      html+=marca(false,'Aquí sí aparece: una deriva de <code>'+javaFD(r.deriva,6)+'</code> pesos con el <em>mismo código</em> y otros tres números de entrada. Eso es lo que hace peligroso al <code>double</code>: el defecto no está en el volumen, está en si los números de entrada se representan exactamente en binario o no, y eso no se puede saber mirando el código.');
+    }
+    $('aSal').innerHTML=html;
+  },30);
+}
+$('aRun').addEventListener('click',correAcumular);
+$('aEsc1').addEventListener('click',function(){
+  $('aKilos').value='12.5'; $('aPrecio').value='2850000'; $('aFactor').value='0.96'; $('aN').value='1000000'; correAcumular(); });
+$('aEsc2').addEventListener('click',function(){
+  $('aKilos').value='37.3'; $('aPrecio').value='2871450'; $('aFactor').value='0.9635'; $('aN').value='1000000'; correAcumular(); });
+
+/* --- laboratorio 5: las dos trampas --- */
+function pintaTrampa(){
+  const s=$('tNum').value.trim();
+  if(!decimalValido(s)){ $('tSal').innerHTML=marca(false,'Escriba un decimal con punto, por ejemplo <code>0.1</code>.'); return; }
+  const d=parseFloat(s);
+  const exa=exacto(d), lit=plain(D(s));
+  const L=[];
+  L.push('new BigDecimal('+s+')    = '+exa);
+  L.push('new BigDecimal("'+s+'")  = '+lit);
+  let html=pasos(L);
+  const igual=(exa===lit);
+  html+=marca(igual,igual
+    ? 'Este número <b>sí</b> se representa exacto en binario, así que las dos formas coinciden. Coinciden los números cuya parte decimal es una suma de potencias de 1/2: 0,5, 0,25, 2,75. <b>Que a veces coincidan es precisamente el problema</b>, porque hace que la regla parezca opcional.'
+    : 'La diferencia son <b>dos comillas</b>, y en la primera línea quedaron '+String((exa.split('.')[1]||'').length)+' decimales donde usted escribió '+String((s.split('.')[1]||'').length)+'. <code>new BigDecimal(double)</code> no arregla nada: recibe el <code>double</code> ya roto y copia su basura con fidelidad absoluta. <b>Por eso el dinero se construye desde texto.</b>');
+  $('tSal').innerHTML=html;
+}
+$('tRun').addEventListener('click',pintaTrampa);
+$('tNum').addEventListener('keydown',function(ev){ if(ev.key==='Enter') pintaTrampa(); });
+[['tP1','0.1'],['tP2','2.85'],['tP3','0.9625'],['tP4','678100.5']].forEach(function(p){
+  $(p[0]).addEventListener('click',function(){ $('tNum').value=p[1]; pintaTrampa(); });
+});
+$('eRun').addEventListener('click',function(){
+  const a=$('eA').value.trim(), b=$('eB').value.trim();
+  if(!decimalValido(a)||!decimalValido(b)){ $('eSal').innerHTML=marca(false,'Dos decimales con punto.'); return; }
+  const A=D(a), B=D(b);
+  const L=[];
+  // Los dos rotulos no miden lo mismo cuando los dos decimales tienen distinta
+  // cantidad de digitos —que es justamente el caso que este laboratorio pide
+  // escribir—, asi que la columna de la flecha y la del igual se calculan en vez
+  // de dejarlas con espacios a mano, que es como se desalinean.
+  const et1='new BigDecimal("'+a+'")', et2='new BigDecimal("'+b+'")';
+  const anc=Math.max(et1.length,et2.length)+3;
+  L.push(pd(et1,anc)+'-> valor sin escala '+A.u.toString()+', escala '+A.s);
+  L.push(pd(et2,anc)+'-> valor sin escala '+B.u.toString()+', escala '+B.s);
+  const anc2=Math.max(anc,'compareTo(...) == 0'.length+1);
+  L.push(pd('equals',anc2)+'= '+eq(A,B));
+  L.push(pd('compareTo(...) == 0',anc2)+'= '+(cmp(A,B)===0));
+  let html=pasos(L);
+  if(cmp(A,B)===0&&!eq(A,B)){
+    html+=marca(false,'Es el mismo dinero y <code>equals</code> dice que no. <b><code>equals</code> compara también la escala</b>: para él 2,50 y 2,5 son objetos distintos porque uno tiene dos decimales y el otro uno. Esta es la trampa que aparece dentro de un <code>assertEquals</code> y hace fallar una prueba que estaba bien.');
+  } else if(eq(A,B)){
+    html+=marca(true,'Aquí los dos coinciden porque tienen la misma escala. Ponga <code>2.50</code> y <code>2.5</code> y mire qué pasa: es el mismo dinero y <code>equals</code> va a decir que no.');
+  } else {
+    html+=marca(true,'Son montos distintos y las dos formas de comparar están de acuerdo. Para ver la trampa hacen falta dos escrituras del <b>mismo</b> monto con distinta cantidad de decimales.');
+  }
+  $('eSal').innerHTML=html;
+});
+
+/* --- laboratorio 6: la division --- */
+$('qRun').addEventListener('click',function(){
+  const a=$('qA').value.trim(), b=$('qB').value.trim();
+  if(!decimalValido(a)||!decimalValido(b)){ $('qSal').innerHTML=marca(false,'Dos decimales con punto.'); return; }
+  const A=D(a), B=D(b);
+  if(B.u===0n){ $('qSal').innerHTML=pre('   ArithmeticException: Division by zero')+marca(false,'Dividir por cero revienta igual en las dos aritméticas.'); return; }
+  const L=[]; let ok;
+  L.push('new BigDecimal("'+a+'").divide(new BigDecimal("'+b+'"))');
+  try{ const q=divExacta(A,B); ok=true; L.push('   = '+plain(q)); }
+  catch(e){ ok=false; L.push('   ArithmeticException: '+e.message); }
+  L.push('');
+  L.push('divide(..., 6, RoundingMode.HALF_UP)');
+  L.push('   = '+plain(divide(A,B,6)));
+  let html=pre(L.join('\n'));
+  html+=marca(ok,ok
+    ? 'Este cociente es finito en decimal, así que <code>divide</code> sin argumentos devuelve el resultado exacto. <b>Que funcione a veces es la trampa</b>: el mismo código revienta el día que el divisor cambia. Pruebe 10 entre 3.'
+    : '<b><code>BigDecimal</code> se niega a inventar un redondeo.</b> Prefiere reventar antes que tomar una decisión de negocio que nadie escribió. Eso es una virtud disfrazada de molestia, y de ahí sale la tercera regla del dinero: la división siempre lleva escala y modo explícitos, para que la decisión quede en el código y no heredada de la biblioteca.');
+  $('qSal').innerHTML=html;
+});
+/* =====================================================================
+   7. CODIGO DE LA SESION (los archivos de codigo/, sin los javadoc)
+   ===================================================================== */
+const CODIGO={};
+CODIGO.v1=`public class LiquidacionService {
+
+    private static final BigDecimal KILOS_POR_CARGA  = new BigDecimal("125");
+    private static final BigDecimal PRECIO_POR_CARGA = new BigDecimal("2850000");
+
+    public BigDecimal liquidar(Muestra m) {
+        BigDecimal factor;
+
+        if (m.tipo().equals("PERGAMINO")) {
+            BigDecimal exceso = m.humedad().subtract(new BigDecimal("11"));
+            factor = BigDecimal.ONE.subtract(exceso.multiply(new BigDecimal("0.02")))
+                    .setScale(4, RoundingMode.HALF_UP)
+                    .max(new BigDecimal("0.8500"));
+
+        } else if (m.tipo().equals("EXCELSO")) {
+            BigDecimal sobreMalla = new BigDecimal(m.malla() - 15);
+            factor = BigDecimal.ONE.add(sobreMalla.multiply(new BigDecimal("0.015")))
+                    .setScale(4, RoundingMode.HALF_UP)
+                    .min(new BigDecimal("1.1000"));
+
+        } else if (m.tipo().equals("ESPECIAL")) {
+            BigDecimal exceso = m.humedad().subtract(new BigDecimal("11"));
+            factor = BigDecimal.ONE.subtract(exceso.multiply(new BigDecimal("0.02")))
+                    .setScale(4, RoundingMode.HALF_UP)
+                    .max(new BigDecimal("0.8500"));
+            if (m.certificada()) {
+                factor = factor.add(new BigDecimal("0.0800")).min(new BigDecimal("1.1000"));
+            }
+
+        } else {
+            throw new IllegalArgumentException(
+                    "tipo de cafe desconocido: '" + m.tipo() + "'. Los tres validos"
+                    + " son PERGAMINO, EXCELSO y ESPECIAL, en mayuscula: la"
+                    + " comparacion distingue mayusculas porque el tipo es un"
+                    + " String y no un enum.");
+        }
+
+        return m.kilos().multiply(PRECIO_POR_CARGA)
+                        .multiply(factor)
+                        .divide(KILOS_POR_CARGA, 0, RoundingMode.HALF_UP);
+    }
+}`;
+CODIGO.v2s=`public interface PoliticaDeCalidad {
+
+    String tipo();
+
+    BigDecimal factor(Muestra m);
+}
+
+
+public class LiquidacionService {
+
+    private static final BigDecimal KILOS_POR_CARGA  = new BigDecimal("125");
+    private static final BigDecimal PRECIO_POR_CARGA = new BigDecimal("2850000");
+
+    private final Politicas politicas;
+
+    public LiquidacionService(Politicas politicas) {
+        this.politicas = politicas;
+    }
+
+    public BigDecimal liquidar(Muestra m) {
+        BigDecimal factor = politicas.para(m.tipo()).factor(m);
+
+        return m.kilos().multiply(PRECIO_POR_CARGA)
+                        .multiply(factor)
+                        .divide(KILOS_POR_CARGA, 0, RoundingMode.HALF_UP);
+    }
+}`;
+CODIGO.v2p=`public class PoliticaPergamino implements PoliticaDeCalidad {
+
+    static final BigDecimal PISO = new BigDecimal("0.8500");
+
+    @Override
+    public String tipo() {
+        return "PERGAMINO";
+    }
+
+    @Override
+    public BigDecimal factor(Muestra m) {
+        BigDecimal exceso = m.humedad().subtract(new BigDecimal("11"));
+        return BigDecimal.ONE.subtract(exceso.multiply(new BigDecimal("0.02")))
+                .setScale(4, RoundingMode.HALF_UP)
+                .max(PISO);
+    }
+}
+
+
+public class PoliticaEspecial implements PoliticaDeCalidad {
+
+    // Reusa el pergamino por COMPOSICION y no por herencia. Es una decision:
+    // si heredara, negociar el piso del pergamino cambiaria esta politica sin
+    // que nadie lo pida.
+    private final PoliticaPergamino base = new PoliticaPergamino();
+
+    @Override
+    public String tipo() {
+        return "ESPECIAL";
+    }
+
+    @Override
+    public BigDecimal factor(Muestra m) {
+        BigDecimal factor = base.factor(m);
+        if (m.certificada()) {
+            factor = factor.add(new BigDecimal("0.0800"))
+                           .min(PoliticaExcelso.TECHO);
+        }
+        return factor;
+    }
+}`;
+CODIGO.politicas=`public class Politicas {
+
+    private final Map<String, PoliticaDeCalidad> porTipo = new LinkedHashMap<>();
+
+    public Politicas() {
+        registrar(new PoliticaPergamino());
+        registrar(new PoliticaExcelso());
+        registrar(new PoliticaEspecial());
+    }
+
+    private void registrar(PoliticaDeCalidad p) {
+        porTipo.put(p.tipo(), p);
+    }
+
+    public PoliticaDeCalidad para(String tipo) {
+        PoliticaDeCalidad p = porTipo.get(tipo);
+        if (p == null) {
+            throw new IllegalArgumentException(
+                    "tipo de cafe desconocido: '" + tipo + "'. Los conocidos"
+                    + " ahora mismo son " + porTipo.keySet() + ", y la comparacion"
+                    + " distingue mayusculas porque el tipo es un String y no un enum.");
+        }
+        return p;
+    }
+}`;
+CODIGO.precio=`public class PrecioDelDia {
+
+    private static PrecioDelDia instancia;
+
+    private long precioPorCarga = 2_850_000L;
+
+    private PrecioDelDia() {
+    }
+
+    public static PrecioDelDia getInstance() {
+        if (instancia == null) {                 // <-- aqui esta la carrera
+            instancia = new PrecioDelDia();
+        }
+        return instancia;
+    }
+
+    public long precioPorCarga() {
+        return precioPorCarga;
+    }
+
+    // El metodo que convierte el patron en un defecto: cualquier parte del
+    // programa puede cambiar el precio para todas las demas, y ninguna firma
+    // de metodo lo anuncia.
+    public void cambiarPrecio(long nuevo) {
+        this.precioPorCarga = nuevo;
+    }
+}`;
+$('codBox').innerHTML=lineasPre(CODIGO.v1);
+$('codPol').innerHTML=lineasPre(CODIGO.politicas);
+$('codPrecio').innerHTML=lineasPre(CODIGO.precio);
+$('tabsCod').querySelectorAll('button').forEach(function(b){
+  b.addEventListener('click',function(){
+    $('tabsCod').querySelectorAll('button').forEach(function(o){ o.classList.remove('on'); });
+    b.classList.add('on');
+    $('codBox').innerHTML=lineasPre(CODIGO[b.dataset.c]);
+  });
+});
+
+/* =====================================================================
+   8. MODULO 4 · Strategy
+   ---------------------------------------------------------------------
+   Los dos caminos estan implementados aparte, igual que en el Java: uno
+   con la cadena de condicionales y otro con un registro de politicas.
+   Asi la comparacion del laboratorio 9 es real y no una impresion doble
+   del mismo resultado.
+   ===================================================================== */
+function factorV1(m){
+  let f;
+  if(m.tipo==='PERGAMINO'){
+    const exceso=sub(D(m.humedad),D('11'));
+    f=max(setScale(sub(UNO,mul(exceso,D('0.02'))),4),D('0.8500'));
+  } else if(m.tipo==='EXCELSO'){
+    const sobre=D(String(m.malla-15));
+    f=min(setScale(add(UNO,mul(sobre,D('0.015'))),4),D('1.1000'));
+  } else if(m.tipo==='ESPECIAL'){
+    const exceso=sub(D(m.humedad),D('11'));
+    f=max(setScale(sub(UNO,mul(exceso,D('0.02'))),4),D('0.8500'));
+    if(m.cert) f=min(add(f,D('0.0800')),D('1.1000'));
+  } else {
+    throw new Error("tipo de cafe desconocido: '"+m.tipo+"'. Los tres validos son PERGAMINO, EXCELSO y ESPECIAL, en mayuscula.");
+  }
+  return f;
+}
+const POLITICAS=new Map();
+[{tipo:'PERGAMINO',factor:function(m){ return humedadBase(D(m.humedad),'0.8500'); }},
+ {tipo:'EXCELSO',  factor:function(m){ const s=D(String(m.malla-15));
+     return min(setScale(add(UNO,mul(s,D('0.015'))),4),TECHO); }},
+ {tipo:'ESPECIAL', factor:function(m){ let f=humedadBase(D(m.humedad),'0.8500');
+     if(m.cert) f=min(add(f,D('0.0800')),TECHO); return f; }}
+].forEach(function(p){ POLITICAS.set(p.tipo,p); });
+function factorV2(m){
+  const p=POLITICAS.get(m.tipo);
+  if(!p) throw new Error("tipo de cafe desconocido: '"+m.tipo+"'. Los conocidos ahora mismo son ["+Array.from(POLITICAS.keys()).join(', ')+"].");
+  return p.factor(m);
+}
+const MUESTRAS=[
+ {tipo:'PERGAMINO',kilos:'500',humedad:'11.5',malla:15,cert:false},
+ {tipo:'PERGAMINO',kilos:'500',humedad:'14.0',malla:15,cert:false},
+ {tipo:'EXCELSO',  kilos:'500',humedad:'11.5',malla:17,cert:false},
+ {tipo:'ESPECIAL', kilos:'500',humedad:'11.5',malla:16,cert:true}];
+function rell(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
+function lineaMuestra(m,f){
+  return '  '+rell(m.tipo,10)+' humedad '+rell(m.humedad,5)+' malla '+m.malla
+    +' cert '+rell(String(m.cert),5)+' -> paga '+pesos(valor(D(m.kilos),f));
+}
+$('vRun').addEventListener('click',function(){
+  const a=['Version con condicionales'], b=['Version con estrategias'];
+  MUESTRAS.forEach(function(m){ a.push(lineaMuestra(m,factorV1(m))); });
+  MUESTRAS.forEach(function(m){ b.push(lineaMuestra(m,factorV2(m))); });
+  const iguales=(a.slice(1).join('\n')===b.slice(1).join('\n'));
+  let html='<div class="apilado">'+pre(a.join('\n'))+pre(b.join('\n'))+'</div>';
+  html+=marca(iguales,iguales
+    ? '<b>Las cuatro liquidaciones dan exactamente lo mismo.</b> Y ahí está el punto incómodo de la sesión, que conviene decir sin adornos: <b>hoy no se ganó nada visible</b>. Se escribieron cinco archivos nuevos, se movieron tres fórmulas, y el programa hace lo mismo que hacía. Si esto fuera todo, la versión con condicionales sería mejor por ser más corta. Lo que se ganó no se mide aquí: se mide en el costo del próximo cambio, y eso es el módulo 5 y el taller.'
+    : 'Los dos caminos dieron resultados distintos, y eso sería un defecto de esta página: repórtelo.');
+  html+='<p style="font-size:15px;color:var(--gray)">Los dos bloques los acabaron de calcular <b>dos funciones distintas</b> de esta página: una con la cadena de <code>if</code> y las tres fórmulas adentro, y otra que le pregunta el factor a un registro de políticas, igual que las dos carpetas de <code>codigo/02-estrategia/</code>. La comparación no es una impresión doble del mismo resultado.</p>';
+  $('vSal').innerHTML=html;
+});
+
+/* --- laboratorio 7: simulador del factor --- */
+function pintaSim(){
+  const tipo=$('sTipo').value;
+  const hum=($('sHum').value/10).toFixed(1);
+  const malla=parseInt($('sMal').value,10);
+  const cert=$('sCert').checked;
+  const kilos=$('sKilos').value.trim();
+  $('sHumV').textContent=hum.replace('.',','); $('sMalV').textContent=String(malla);
+  if(!decimalValido(kilos)){ $('sSal').innerHTML=marca(false,'Los kilos tienen que ser un número, por ejemplo <code>500</code> o <code>30.9</code>.'); return; }
+  const t=trazaFactor(tipo,hum,malla,cert);
+  const v=trazaValor(t.L,kilos,t.f);
+  let html=pasos(t.L);
+  html+='<p class="grande">'+esp(plain(v))+'</p>';
+  if(tipo==='EXCELSO'){
+    html+=marca(true,'Mueva la humedad y mire el resultado: <b>no cambia nada</b>. La fórmula del excelso no mira la humedad. Eso —y no los números— es la razón por la que aquí hace falta Strategy y no una tabla de constantes.');
+  } else if(t.pisoEstado==='activo'&&tipo!=='ESPECIAL'){
+    html+=marca(true,'El piso está activo: <b>la humedad de aquí para arriba ya no penaliza más</b>, porque <code>max</code> está devolviendo el piso y no el resultado de la fórmula. Un piso es una decisión de negocio —la cooperativa no castiga sin límite— y está escrito en el código como una constante con nombre, no como un número suelto.');
+  } else if(t.pisoEstado==='frontera'&&tipo!=='ESPECIAL'){
+    html+=marca(true,'Esta humedad es <b>exactamente la frontera</b> y vale la pena pararse aquí un momento: la fórmula cayó justo sobre el piso, así que <code>max</code> devolvió el valor del piso sin haber corregido nada. Es la última humedad en la que la fórmula todavía manda. Suba medio punto más y el resultado va a ser el mismo número, pero por otra razón: ya no lo pone la fórmula, lo pone el piso.');
+  }
+  $('sSal').innerHTML=html;
+}
+['sTipo','sHum','sMal','sCert','sKilos'].forEach(function(id){
+  $(id).addEventListener('input',pintaSim); $(id).addEventListener('change',pintaSim);
+});
+pintaSim();
+$('pRun').addEventListener('click',function(){
+  const dado=numero($('pPred').value);
+  const f=factorV2({tipo:'PERGAMINO',humedad:'11.5',malla:15,cert:false});
+  const v=valor(D('500'),f);
+  const real=plain(v);
+  const L=['  '+rell('PERGAMINO',10)+' humedad '+rell('11.5',5)+' malla 15 cert false -> paga '+miles(real)];
+  let html=pre(L.join('\n'));
+  if(!dado){
+    html=marca(false,'Escriba primero un número en el campo, aunque sea un tanteo. <b>Predecir mal y ver por qué es la mitad del ejercicio</b>; leer la respuesta sin haber apostado no enseña nada.')+html;
+  } else if(dado===real){
+    html=marca(true,'Exacto. Cuatro cargas justas, medio punto de humedad sobre el umbral, un punto porcentual de penalización: factor 0,9900 sobre 11.400.000.')+html;
+  } else {
+    const dif=sub(D(dado),v);
+    const dosPuntos=plain(valor(D('500'),D('0.9800')));
+    const sinFactor=plain(valor(D('500'),UNO));
+    let razon;
+    if(dado===dosPuntos) razon='Ese número sale de penalizar <b>dos</b> puntos porcentuales en vez de uno, que es el error frecuente aquí: la humedad está medio punto sobre 11 y no un punto entero, así que <code>0,5 × 0,02 = 0,01</code>.';
+    else if(dado===sinFactor) razon='Ese es el valor <b>sin factor de calidad</b>: cuatro cargas justas a precio pleno. Falta descontar la humedad, que está medio punto sobre el umbral.';
+    else razon='La cuenta completa está en la traza del laboratorio de arriba, con esta misma muestra: cuatro cargas justas dan '+esp(sinFactor)+' al factor 1, y el factor de esta muestra no es 1.';
+    html=marca(false,'No: se pasó '+(cmp(dif,D('0'))>0?'por encima':'por debajo')+' en '+esp(plain(cmp(dif,D('0'))>0?dif:sub(D('0'),dif)))+' pesos. '+razon)+html;
+  }
+  html+=pasos(trazaFactor('PERGAMINO','11.5',15,false).L);
+  $('pSal').innerHTML=html;
+});
+
+/* =====================================================================
+   9. MODULO 6 · Singleton
+   ===================================================================== */
+const PrecioDelDia=(function(){
+  let instancia=null;
+  function crear(){ return {
+    precio:2850000,
+    precioPorCarga:function(){ return this.precio; },
+    cambiarPrecio:function(n){ this.precio=n; } }; }
+  return { getInstance:function(){ if(instancia===null) instancia=crear(); return instancia; } };
+})();
+function liquidarConSingleton(kilosStr,factorStr){
+  const precio=PrecioDelDia.getInstance().precioPorCarga();
+  return divide(mul(mul(D(kilosStr),D(String(precio))),D(factorStr)),KPC,0);
+}
+const logP=[]; let algunaFallo=false;
+function pruebaNormal(){
+  const pago=liquidarConSingleton('500','0.96');
+  const pasa=(cmp(pago,D('10944000'))===0); if(!pasa) algunaFallo=true;
+  logP.push('   precio normal  espera 10,944,000  obtiene '+pesos(pago)+'  -> '+(pasa?'PASA':'FALLA'));
+}
+function pruebaAlza(){
+  PrecioDelDia.getInstance().cambiarPrecio(3000000);
+  const pago=liquidarConSingleton('500','0.96');
+  const pasa=(cmp(pago,D('11520000'))===0); if(!pasa) algunaFallo=true;
+  logP.push('   precio de alza espera 11,520,000  obtiene '+pesos(pago)+'  -> '+(pasa?'PASA':'FALLA'));
+}
+function reiniciarLoQueSePueda(){ PrecioDelDia.getInstance().cambiarPrecio(2850000); }
+function pintaPruebas(nota,cambioDeResultado){
+  const est=PrecioDelDia.getInstance().precioPorCarga();
+  let html=pre(logP.join('\n'));
+  html+='<div class="pasos">estado que queda en memoria: <span class="r">PrecioDelDia.getInstance().precioPorCarga() = '+miles(String(est))+'</span></div>';
+  // Este aviso solo aparece cuando el MISMO boton acaba de dar un resultado
+  // distinto del que dio antes, y es el hallazgo mas fuerte del laboratorio:
+  // ninguna prueba se edito en medio. Antes no existia, y en su lugar el boton
+  // del segundo orden reiniciaba el precio a escondidas para que las corridas
+  // fueran reproducibles; eso hacia falsa la instruccion "sin reiniciar nada en
+  // medio" y, peor, escondia justamente lo que hay que ver.
+  if(cambioDeResultado){
+    html+=marca(false,'Fíjese en lo que acaba de pasar: <b>es el mismo botón, son las mismas dos pruebas, y el resultado cambió</b>. Usted no editó ninguna prueba ni tocó una fórmula. Lo único distinto es lo que quedó en memoria de la corrida anterior, y está impreso arriba en la primera línea. <b>Una suite que da resultados distintos sin que nadie cambie el código no es una suite: es un rumor.</b>');
+  }
+  if(nota){ html+=nota; }
+  else if(algunaFallo){
+    html+=marca(false,'Ahí está. <b>Ninguna de las dos pruebas está mal escrita</b> y una falla. La de alza necesita otro precio, la única forma de conseguirlo es cambiarlo para todo el programa, y no lo anuncia en ninguna parte. Una suite así está verde hasta el día en que alguien reordena los métodos, agrega una prueba en medio, o —esto es lo que de verdad pasa— <b>activa la ejecución en paralelo para que la compilación sea más rápida</b>.');
+  } else {
+    html+=marca(true,'En este orden las dos pasan. Ahora córralas en el orden contrario, <b>sin reiniciar nada en medio</b>, y mire qué pasa. Y cuando vuelva, oprima otra vez este mismo botón: eso también tiene algo que mostrar.');
+  }
+  $('tSalP').innerHTML=html;
+}
+// Ninguno de los dos botones de orden reinicia nada, a proposito: el precio que
+// quedo de la corrida anterior es el que entra a la siguiente, que es lo que
+// pasa de verdad en una suite con estado global. La primera linea del log
+// imprime con que precio arranca la corrida para que ese acarreo se vea en vez
+// de tener que adivinarse. Reiniciar aqui haria la pagina mas ordenada y le
+// quitaria el hallazgo.
+//
+// Esto se aparta del Main1 de Java, que si llama a reiniciarLoQueSePueda() antes
+// del segundo bloque: alla es un programa lineal que corre una vez y quiere los
+// dos ordenes desde el mismo punto de partida. Las cuatro lineas de resultado
+// salen igual de todos modos -- se comprobaron letra por letra contra la
+// consola -- porque la prueba de alza fija el precio ella misma. La diferencia
+// esta dicha en el texto del laboratorio, no escondida aqui.
+const ultimaFirma={};
+function correOrden(boton,rotulo,pruebas){
+  algunaFallo=false; logP.length=0;
+  logP.push(rotulo);
+  logP.push('   precio en memoria al arrancar: '
+    +miles(String(PrecioDelDia.getInstance().precioPorCarga())));
+  pruebas.forEach(function(p){ p(); });
+  const firma=logP.filter(function(l){ return l.indexOf('->')>=0; })
+    .map(function(l){ return l.indexOf('FALLA')>=0?'F':'P'; }).join('');
+  const cambio=(ultimaFirma[boton]!==undefined&&ultimaFirma[boton]!==firma);
+  ultimaFirma[boton]=firma;
+  pintaPruebas(null,cambio);
+}
+$('tOrd1').addEventListener('click',function(){
+  correOrden('1','1. Dos pruebas, en este orden',[pruebaNormal,pruebaAlza]); });
+$('tOrd2').addEventListener('click',function(){
+  correOrden('2','2. Las mismas dos pruebas, en el orden contrario',[pruebaAlza,pruebaNormal]); });
+$('tReset').addEventListener('click',function(){
+  reiniciarLoQueSePueda(); algunaFallo=false; logP.length=0;
+  logP.push('   reiniciarLoQueSePueda(): el precio volvio a 2,850,000 a mano,');
+  logP.push('   porque el campo estatico es privado y no hay forma de volverlo null.');
+  pintaPruebas(marca(false,'Esto es <b>el remiendo</b>, no el arreglo. El precio volvió a su valor y con un <code>@BeforeEach</code> que llame a esto la suite queda verde, pero el estado global sigue ahí y la dependencia sigue sin declararse: <b>ninguna prueba puede darle su propio precio</b>, y correrlas en paralelo sigue siendo imposible. Es la pregunta 13 del módulo 9 y la cuarta de las cinco preguntas de autoevaluación, que es la del quiz.')); });
+
+/* --- laboratorio 12: el entrelazado --- */
+const PASOS_HILOS=[
+ {et:'espera en\nla barrera', cls:'', txt:'Ocho hilos creados y detenidos en la misma barrera. La instancia todavía no existe: <code>instancia == null</code>.'},
+ {et:'pasa la\nbarrera', cls:'act', txt:'La barrera se abre y los ocho arrancan <b>al mismo tiempo</b>. Nada en <code>getInstance()</code> los coordina, porque el método no está sincronizado.'},
+ {et:'if (instancia\n== null)', cls:'act', txt:'Los ocho evalúan la misma condición. Y aquí está todo el defecto: <b>evaluar la condición y asignar la variable son dos operaciones</b>, y entre una y otra el hilo puede perder el procesador.'},
+ {et:'ve null', cls:'act', txt:'Los ocho ven <code>null</code>, porque ninguno ha terminado de construir todavía. El constructor tarda: en el ejemplo de la clase hay un <code>Thread.sleep(50)</code> que lo hace tardar a propósito, pero leer un archivo de configuración o abrir una conexión tarda más que eso sin ayuda de nadie.'},
+ {et:'new Configu-\nracionLenta()', cls:'hizo', txt:'Los ocho construyen. <b>Ocho objetos donde el patrón prometía uno.</b>'},
+ {et:'asigna\ninstancia', cls:'hizo', txt:'Los ocho asignan el campo estático y el último gana. De ahí en adelante el programa funciona con una sola instancia y <b>nadie se va a enterar nunca</b> de que se construyeron ocho, salvo que alguien las cuente como lo hace el <code>Main1</code> de la clase.'}
+];
+let pasoH=0;
+function pintaHilos(){
+  const c=$('hilos'); c.innerHTML='';
+  const p=PASOS_HILOS[pasoH];
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    if(p.cls) d.className=p.cls;
+    d.innerHTML='<b style="color:inherit">h'+(i+1)+'</b><br>'+esc(p.et).replace(/\n/g,'<br>');
+    c.appendChild(d);
+  }
+  $('hSal').innerHTML='<div class="pasos">paso '+(pasoH+1)+' de '+PASOS_HILOS.length+'</div><p style="font-size:15.5px;margin-bottom:0">'+p.txt+'</p>';
+  $('hPaso').disabled=(pasoH===PASOS_HILOS.length-1);
+  $('hPaso').textContent=(pasoH===PASOS_HILOS.length-1)?'no hay más pasos':'paso siguiente';
+}
+$('hPaso').addEventListener('click',function(){ if(pasoH<PASOS_HILOS.length-1){ pasoH++; pintaHilos(); } });
+$('hReset').addEventListener('click',function(){ pasoH=0; pintaHilos(); });
+pintaHilos();
+
+/* --- laboratorio 13: campos mutables --- */
+const CAMPOS=[
+ {t:'Un repositorio que consulta la tabla de tarifas en la base de datos y no guarda nada entre llamadas.',
+  r:false, por:'No comparte nada. Tiene una dependencia a la fuente de datos, y ninguna de las dos llamadas se entera de la otra. Un objeto sin campos mutables del que hay uno solo por aplicación es perfectamente seguro.'},
+ {t:'Un servicio que va acumulando en un campo <code>List&lt;Liquidacion&gt;</code> las liquidaciones del día para imprimir un total al cierre.',
+  r:true, por:'Sí, y es el caso de la cuarta pregunta de autoevaluación. Que Spring lo administre no cambia nada: la lista crece con lo que hizo cualquier otra parte del programa, y en las pruebas cada caso le deja basura al siguiente.'},
+ {t:'Un componente con un campo <code>private final BigDecimal precioPorCarga</code> que se lee de la configuración al arrancar.',
+  r:false, por:'No. Es <code>final</code> y se fija en la construcción, así que después de construido no cambia nunca. La pregunta no es si el objeto tiene campos, es si tiene campos que <em>cambien después de construido</em>.'},
+ {t:'Un componente con un campo <code>private String ultimoTipoConsultado</code> que se actualiza en cada llamada para dejarlo en un registro.',
+  r:true, por:'Sí, aunque parezca inofensivo porque es «solo para un log». Dos peticiones simultáneas se lo pisan, y en las pruebas el valor que quedó depende de la prueba anterior. El tamaño del campo no tiene nada que ver.'}
+];
+function pintaCampos(){
+  $('camp').innerHTML=CAMPOS.map(function(c,i){
+    return '<label class="op" data-i="'+i+'"><input type="checkbox" data-i="'+i+'"><span>'+c.t+'</span></label>';
+  }).join('');
+  $('camp').className='opciones';
+  $('camp').querySelectorAll('input').forEach(function(inp){
+    inp.addEventListener('change',function(){ inp.closest('.op').classList.toggle('elegida',inp.checked); });
+  });
+  $('campRes').innerHTML=''; $('campVer').disabled=false; $('campOtra').style.display='none';
+}
+pintaCampos();
+$('campVer').addEventListener('click',function(){
+  let bien=0; let expl='';
+  CAMPOS.forEach(function(c,i){
+    const inp=$('camp').querySelector('input[data-i="'+i+'"]');
+    const lab=inp.closest('.op');
+    const ok=(inp.checked===c.r); if(ok) bien++;
+    lab.classList.remove('elegida');
+    lab.classList.add(ok?'ok':'err');
+    inp.disabled=true;
+    expl+='<div class="expl'+(ok?'':' mal')+'"><b>'+(i+1)+'. '+(c.r?'Sí comparte estado mutable. ':'No comparte estado mutable. ')+'</b>'+c.por+'</div>';
+  });
+  $('campRes').innerHTML=marca(bien===4,'<b>'+bien+' de 4.</b> '+(bien===4
+    ? 'Esa es la pregunta que hay que aprender a hacer, y no tiene nada que ver con el patrón ni con el contenedor.'
+    : 'Fíjese en que la pregunta no es cuántas instancias hay ni quién las crea: es si el objeto tiene campos que cambien después de construido.'))+expl;
+  $('campVer').disabled=true; $('campOtra').style.display='';
+});
+$('campOtra').addEventListener('click',pintaCampos);
+
+/* =====================================================================
+   10. MODULO 7 · comprobador del taller
+   ===================================================================== */
+function pintaOrganico(){
+  const hum=($('oHum').value/10).toFixed(1);
+  const malla=parseInt($('oMal').value,10);
+  const cert=$('oCert').checked;
+  const kilos=$('oKilos').value.trim();
+  $('oHumV').textContent=hum.replace('.',','); $('oMalV').textContent=String(malla);
+  if(!decimalValido(kilos)){ $('oSal').innerHTML=marca(false,'Los kilos tienen que ser un número.'); return; }
+  const t=trazaFactor('ORGANICO',hum,malla,cert);
+  const v=trazaValor(t.L,kilos,t.f);
+  let html=pasos(t.L);
+  html+='<p class="grande">'+esp(plain(v))+'</p>';
+  html+='<div class="pasos">la linea que su Main1 tiene que imprimir:<br><span class="r">'
+    +esc('  '+rell('ORGANICO',10)+' humedad '+rell(hum,5)+' malla '+malla+' cert '+rell(String(cert),5)+' -> paga '+pesos(v))+'</span></div>';
+  const esLaObligatoria=(kilos==='500'&&hum==='14.0'&&malla===15&&cert);
+  if(esLaObligatoria){
+    html+=marca(true,'Esta es la muestra obligatoria del enunciado y <b>tiene que dar 11.400.000 en las dos versiones</b>. Si su código imprime otro número, la fórmula está mal implementada y todavía no hay nada que medir. Note que la malla no aparece en la cuenta: el orgánico no la mira, igual que el pergamino.');
+  } else {
+    // Aviso deliberado en los casos bajo el umbral: el deslizador arranca en 8,0
+    // y la expresion premia por debajo de 11, asi que la mitad del recorrido
+    // discrepa de una implementacion con condicional. Verificado el 3 de
+    // septiembre de 2026 contra la solucion de referencia con OpenJDK 17.0.20:
+    // humedad 8,0 -> factor 1,0600, certificada -> techo 1,1000 -> 12.540.000.
+    html+=marca(true,'Este es un caso suyo, no el del enunciado. <b>Sirve para comparar contra su Java</b>: si los dos dan lo mismo aquí y en la muestra obligatoria, la fórmula está bien.'
+      +(parseFloat(hum)<11
+        ? ' Y ojo con este caso en particular, porque la humedad está <b>por debajo de 11</b> y ahí la expresión premia en lugar de penalizar: si su Java tiene un condicional que deja el factor en 1,0000 cuando la humedad no pasa del umbral, va a discrepar de este laboratorio aquí y a coincidir en la muestra obligatoria. <b>Eso no le cuesta nota</b> —las cuatro comprobaciones usan solo la muestra de 14,0—, pero conviene saber de dónde sale la diferencia.'
+        : '')
+      +' Vuelva a 500 kg, humedad 14,0, malla 15, certificada para ver la muestra que sí hay que entregar.');
+  }
+  $('oSal').innerHTML=html;
+}
+['oHum','oMal','oCert','oKilos'].forEach(function(id){
+  $(id).addEventListener('input',pintaOrganico); $(id).addEventListener('change',pintaOrganico);
+});
+pintaOrganico();
+/* =====================================================================
+   11. MODULO 9 · evaluacion
+
+   Dos cosas del orden de las opciones que conviene no volver a romper,
+   porque la primera version de este cuestionario las tenia rotas las dos y
+   se podia aprobar sin leer las preguntas.
+
+   La primera: la clave estaba en la segunda opcion en trece de las catorce
+   preguntas cerradas. Las opciones se pintan en el orden en que estan
+   escritas aqui y no se revuelven -- a proposito, porque varias
+   explicaciones se refieren a una opcion por su contenido y una de ellas
+   por su posicion --, asi que marcar «b» en las catorce y escribir
+   cualquier cosa en las dos numericas daba 13 de 16, por encima del umbral
+   de 12. Ahora la clave esta cuatro veces en la primera opcion, tres en la
+   segunda, tres en la tercera y cuatro en la cuarta, y las cuatro
+   estrategias de una sola letra se corrieron sobre esta misma pagina: dan
+   4, 3, 3 y 4 de 16. Contestar bien las dieciseis da 16 de 16.
+
+   La segunda, mas silenciosa: en nueve preguntas la clave era tambien la
+   opcion mas larga, porque al escribir la respuesta correcta uno le agrega
+   el «porque» y a los distractores no. Eso es un atajo que funciona sin
+   saber el tema. Se arreglo recortando las claves y dandoles a los
+   distractores el mismo tipo de justificacion que tenia la clave -- que
+   ademas los mejora, porque un distractor con razon es mas dificil de
+   descartar que uno seco --. Hoy la clave no es la opcion mas larga en
+   ninguna de las catorce, y marcar siempre la mas larga da 0 de 16, tambien
+   medido. Que quede en cero y no en el 25% que daria un reparto perfecto es
+   una consecuencia de haber recortado las claves, y se deja asi a
+   proposito: el sesgo invertido no sirve para aprobar, y un estudiante que
+   lo descubriera estaria razonando sobre la forma de las opciones, que es
+   justamente lo que el sesgo original le permitia no hacer.
+
+   Si se agrega o se reescribe una pregunta, hay que volver a mirar las dos
+   cuentas.
+   ===================================================================== */
+const QUIZ=[
+{m:2,t:'¿Qué hace que un patrón de diseño tenga valor arquitectónico?',
+ ops:['Que esté en el catálogo de los cuatro autores del libro de 1994.',
+      'Que reduzca la cantidad de líneas de código del sistema.',
+      'Que decida quién depende de quién.',
+      'Que permita cambiar el comportamiento sin volver a compilar.'],
+ r:2,
+ por:'El catálogo GoF trae veintitrés patrones y la mayoría resuelven problemas locales: Iterator, Builder. La opción del catálogo es la tentadora porque el libro es la autoridad del tema, pero la autoridad no es el criterio. El criterio es la prueba de la sesión 1: si mañana cambio de opinión, ¿cuántos archivos se enteran?'},
+{m:2,t:'De estas cuatro decisiones sobre el código de la cooperativa, ¿cuál tiene valor arquitectónico?',
+ ops:['Que el servicio de liquidación reciba por constructor la fuente del precio.',
+      'Usar Builder para construir la <code>Muestra</code> sin escribir un constructor de nueve parámetros que nadie recuerda en qué orden van.',
+      'Renombrar el método <code>liquidar</code> a <code>calcularPago</code> para que se entienda mejor.',
+      'Extraer un método privado de veinte líneas del cálculo del factor.'],
+ r:0,
+ por:'Las otras tres son mejoras de código y ninguna mueve una dependencia entre partes del sistema. La del Builder es la más tentadora porque es un patrón con nombre propio del catálogo, y sigue siendo local: si mañana lo quita, cambia una clase y nadie más se entera.'},
+{m:3,t:'De los dos daños que hace <code>double</code> con dinero, ¿cuál produjo el peso de diferencia del ejemplo de la cooperativa?',
+ ops:['La acumulación del error a lo largo de un millón de operaciones.',
+      'La pérdida de dígitos al imprimir el informe con dos decimales.',
+      'La conversión de texto a <code>double</code> al leer el archivo de entrada.',
+      'El redondeo en la frontera, en una sola liquidación.'],
+ r:3,
+ por:'La acumulación es el argumento de todos los tutoriales y resultó ser el débil: con 12,5 kg a 2.850.000 por 0,96, un millón de operaciones dieron una deriva de exactamente cero. Ojo con la conclusión fácil, porque no es que la acumulación no exista: el mismo código con 37,3 kg a 2.871.450 por 0,9635 derivó 18,652954 pesos. Lo que decide es si los números de entrada caben exactos en binario, no cuántas operaciones se hagan, y ese «a veces sí y a veces no» es la razón por la que el defecto sobrevive años en producción. El daño que sí pagó un peso en el caso de la cooperativa fue una sola liquidación de 30,9 kg cuyo valor exacto cae en 678.100,5, justo en la frontera del redondeo.'},
+{m:3,tipo:'num',t:'Una entrega de 30,9 kg con factor 0,9625 a 2.850.000 la carga vale exactamente 678.100,5 pesos y se liquida en pesos enteros. ¿Cuántos pesos de menos se le pagaron al caficultor por haberla calculado con <code>double</code>?',
+ r:'1', unidad:'pesos de diferencia', uni1:'peso de diferencia',
+ por:'<code>BigDecimal</code> con HALF_UP paga 678.101 y <code>Math.round</code> sobre el <code>double</code> paga 678.100, porque el <code>double</code> vale 678100,4999999998835… y no alcanza la mitad exacta. Un peso. Y el informe con dos decimales muestra 678100,50 en los dos casos: el defecto no está en el cálculo, está en que el formato lo tapa.'},
+{m:3,t:'¿Cuál de estas construcciones se usa para dinero, y por qué?',
+ ops:['<code>new BigDecimal(0.1)</code>, porque evita el paso de convertir texto a número y por eso construye más rápido.',
+      'Las dos son equivalentes; la diferencia es de estilo.',
+      '<code>new BigDecimal("0.1")</code>, porque el otro constructor recibe el <code>double</code> ya roto y copia su valor.',
+      '<code>BigDecimal.valueOf(0.1)</code>, que es la única de las tres que es exacta.'],
+ r:2,
+ por:'<code>new BigDecimal(0.1)</code> imprime 0.1000000000000000055511151231257827021181583404541015625, los cincuenta y cinco dígitos del <code>double</code>. La opción de que da igual es la peligrosa, porque para algunos números —0,5, 0,25, 2,75— las dos formas sí coinciden, y eso hace que la regla parezca opcional. Sobre <code>valueOf</code>: hace algo distinto —pasa por <code>Double.toString</code>— y aun así la regla del curso es construir desde texto, para no tener que razonar caso por caso.'},
+{m:3,t:'<code>new BigDecimal("2.50").equals(new BigDecimal("2.5"))</code> devuelve…',
+ ops:['<code>true</code>, porque los dos montos valen lo mismo.',
+      '<code>false</code>, porque <code>equals</code> compara también la escala.',
+      '<code>false</code>, porque <code>equals</code> compara identidad de objetos.',
+      'lanza una excepción, porque las escalas no coinciden.'],
+ r:1,
+ por:'Es el mismo dinero y <code>equals</code> dice que no, porque para <code>BigDecimal</code> 2,50 con dos decimales y 2,5 con uno son objetos distintos. La opción de la identidad de objetos es tentadora y es falsa: <code>BigDecimal</code> sí redefine <code>equals</code>; lo que hace es incluir la escala en la comparación. Para dinero se usa <code>compareTo(...) == 0</code>.'},
+{m:3,t:'<code>new BigDecimal("10").divide(new BigDecimal("3"))</code>, sin más argumentos, ¿qué hace?',
+ ops:['Lanza <code>ArithmeticException</code>, porque el cociente es periódico.',
+      'Devuelve 3.333333, porque la biblioteca aplica seis decimales cuando no se le dice otra cosa.',
+      'Devuelve 3, truncando la parte decimal.',
+      'Devuelve 3.3333333333333335, igual que un <code>double</code>.'],
+ r:0,
+ por:'El mensaje es «Non-terminating decimal expansion; no exact representable decimal result». <code>BigDecimal</code> prefiere reventar antes que tomar por su cuenta una decisión de negocio que nadie escribió. La opción de los seis decimales por omisión es la más tentadora porque parece razonable, y es exactamente lo que la biblioteca se niega a hacer sola.'},
+{m:4,t:'En la versión con estrategias, ¿qué le pasó al método que calcula el pago?',
+ ops:['Quedó igual, pero con las tres fórmulas en métodos privados de la misma clase.',
+      'Desapareció: ahora cada política calcula el pago completo.',
+      'Se volvió más largo, porque hay que buscar la política antes de calcular.',
+      'Quedó de dos líneas y no menciona ninguna fórmula de calidad.'],
+ r:3,
+ por:'Le pide el factor al registro de políticas y multiplica. Las tres fórmulas están en tres archivos que ese método no conoce. La opción de los métodos privados es la mejora que casi todo el mundo hace primero, y es real pero distinta: mover las fórmulas a métodos privados de la misma clase deja el archivo del dinero tocándose cada vez que entra un tipo nuevo de café.'},
+{m:4,tipo:'num',t:'500 kg de <code>PERGAMINO</code> con humedad 11,5 y malla 15, sin certificación, a 2.850.000 la carga. ¿Cuánto paga, en pesos?',
+ r:'11286000', unidad:'pesos',
+ por:'Cuatro cargas justas son 11.400.000 al factor 1. La humedad de 11,5 está medio punto sobre el umbral de 11, así que penaliza 0,5 × 0,02 = 0,01 y el factor queda en 0,9900. El error frecuente es penalizar dos puntos porcentuales en vez de uno, porque se cuenta «un punto de humedad» donde hay medio.'},
+{m:4,t:'¿En cuál de estos casos aplicar Strategy a las fórmulas de calidad habría sido sobre-ingeniería?',
+ ops:['En ninguno: una cadena de condicionales es siempre peor que Strategy, en cualquier escenario.',
+      'Si los tres tipos de café se diferenciaran solo en una constante.',
+      'Si hubiera más de tres tipos de café.',
+      'Si el equipo de desarrollo fuera de dos personas.'],
+ r:1,
+ por:'Con una constante por tipo, un <code>Map&lt;String, BigDecimal&gt;</code> de tres entradas hace el trabajo, y cinco clases para guardar tres números son peores que un <code>if</code>. Strategy se gana el sueldo aquí porque las tres fórmulas miran <em>datos distintos</em> de la muestra. Y la de «en ninguno» no es solo incorrecta: es la respuesta que pierde completa la tercera pregunta escrita del taller.'},
+{m:5,t:'En la versión con estrategias, cuando entra un cuarto tipo de café el <code>diff</code> muestra dos archivos modificados: el <code>Main1</code>, que solo suma la muestra de prueba, y uno más. ¿Cuál es ese otro, y por qué modificarlo es menos riesgoso que modificar el del cálculo?',
+ ops:['El archivo de la política del pergamino, porque el orgánico reusa su fórmula de la humedad y hay que abrirla para reusarla.',
+      'La interfaz <code>PoliticaDeCalidad</code>, porque hay que agregarle el método del tipo nuevo.',
+      'Ninguno: con estrategias no hay que modificar nada.',
+      '<code>Politicas</code>, el punto de cableado, porque no contiene ninguna fórmula.'],
+ r:3,
+ por:'<code>Politicas</code> es una tabla y una búsqueda, escrita deliberadamente tonta para que quien la edite no pueda romper un cálculo: se le agrega una línea al constructor y eso es todo. La opción de que no hay que modificar nada es la que más tienta después de una clase sobre Strategy, y es falsa: el conocimiento de que las políticas existen no desapareció, se mudó. La interfaz no se toca; si hubiera que tocarla, el patrón no estaría bien aplicado. Y la política del pergamino tampoco: reusar su fórmula es una decisión legítima, pero se hace <em>desde</em> la política nueva —por herencia o por composición, que es lo que el taller pide defender— sin editar el archivo del pergamino.'},
+{m:5,t:'En la sesión 3 el contenedor de Spring descubre las tres implementaciones solo y <code>Politicas</code> desaparece. ¿Qué pasa con el conocimiento que vivía en ese archivo?',
+ ops:['Se muda a un mecanismo que no se ve, y eso lo vuelve una decisión arquitectónica.',
+      'Desaparece: ya nadie necesita saber que las tres políticas existen.',
+      'Se duplica en cada política, que ahora se registra a sí misma.',
+      'Pasa al archivo de configuración de la aplicación, donde a partir de ahora hay que listarlas a mano.'],
+ r:0,
+ por:'Alguien sigue teniendo que saberlo; lo que cambia es que ese alguien ya no es un archivo que se pueda abrir. La opción de que el conocimiento desaparece es la conclusión natural y es la trampa: la comodidad de la inyección de dependencias hace parecer que el problema se disolvió, y de ahí en adelante nadie sabe dónde mirar cuando falla.'},
+{m:6,t:'Un <code>@BeforeEach</code> llama a <code>reiniciarLoQueSePueda()</code> antes de cada prueba y la suite queda verde. ¿Por qué eso no arregla el diseño?',
+ ops:['Porque el método es privado y JUnit no lo puede llamar.',
+      'Porque JUnit no garantiza el orden de ejecución de las pruebas y el remiendo depende de que corran en orden.',
+      'Porque el estado global sigue ahí y ninguna prueba puede darle su propio precio.',
+      'Porque falta sincronizar <code>getInstance()</code>, que es de donde viene el estado compartido.'],
+ r:2,
+ por:'El campo estático es privado y no hay manera de volverlo nulo, así que el remiendo solo puede devolver el valor. La suite queda verde y las pruebas siguen sin poder correr en paralelo y sin poder sustituir el precio. La opción de sincronizar <code>getInstance()</code> aparece siempre y no tiene ninguna relación con este problema: arregla la carrera de hilos, no el estado compartido.'},
+{m:6,t:'Sincronizar <code>getInstance()</code>, inicializar el campo estáticamente o declarar la clase como <code>enum</code>. ¿Qué arreglan de las tres consecuencias del Singleton?',
+ ops:['Las tres.',
+      'Solo las dos primeras: las pruebas que se pisan y la dependencia escondida.',
+      'Ninguna; son remedios que circulan en internet y no hacen nada.',
+      'Solo la tercera: que se construya más de una instancia.'],
+ r:3,
+ por:'Un Singleton perfectamente sincronizado sigue siendo estado global que las pruebas se pasan entre sí, y sigue escondiendo la dependencia dentro del método. Y las dos primeras son las que cuestan dinero. Lo que arregla las tres es lo de la sesión 1: una sola instancia creada en el punto de cableado y entregada por constructor.'},
+{m:6,t:'El programa de la clase imprimió «instancias distintas creadas : 8». Si en otra corrida imprime 1, ¿qué significa?',
+ ops:['Que en esa máquina el código está correcto.',
+      'Que esa corrida tuvo suerte, nada más.',
+      'Que la máquina virtual optimizó el constructor y lo ejecutó una sola vez.',
+      'Que el <code>Thread.sleep(50)</code> no alcanzó a ejecutarse.'],
+ r:1,
+ por:'En treinta corridas de la máquina de verificación, que tiene dos núcleos, el número estuvo siempre entre 7 y 8 y nunca fue 1; ese rango es lo único que vale publicar, porque el reparto depende del computador y de lo que esté corriendo al lado. Un Singleton que produce ocho instancias en una corrida y siete en la siguiente se sigue llamando Singleton en el código y en el documento de arquitectura.'},
+{m:6,t:'«Spring usa el patrón Singleton por omisión». ¿Cuál es la diferencia que importa entre las dos cosas?',
+ ops:['Quién controla el ciclo de vida: el contenedor lo administra desde afuera.',
+      'Ninguna: es el mismo patrón con otro nombre.',
+      'Que Spring crea varias instancias y el patrón crea una sola.',
+      'Que un objeto administrado por Spring nunca tiene estado mutable que se comparta entre peticiones.'],
+ r:0,
+ por:'La última es la tentadora y es falsa, y por eso está aquí: un objeto administrado por Spring del que hay uno solo y que tenga un campo que cambie después de construido comparte ese campo con todo el programa exactamente igual que <code>PrecioDelDia</code>. Lo que cambia no es cuántas instancias hay ni si el estado se comparte: es que ese objeto <b>se puede sustituir desde afuera</b>.'}
+];
+/* lo que mide cada pregunta, para el informe del final */
+const TEMAS=['el criterio de lo arquitectónico',
+ 'distinguir una decisión arquitectónica de una mejora local',
+ 'cuál de los dos daños del double es el que cuesta dinero',
+ 'la cuenta de la frontera de redondeo',
+ 'construir el dinero desde texto',
+ 'equals contra compareTo, y la escala',
+ 'la división sin escala explícita',
+ 'qué le pasó al método que calcula el dinero',
+ 'el factor de calidad y el pago, calculados',
+ 'cuándo Strategy es sobre-ingeniería',
+ 'cuál archivo se toca y por qué sale más barato',
+ 'a dónde se muda el conocimiento del cableado',
+ 'por qué el remiendo del @BeforeEach no arregla el diseño',
+ 'qué arreglan de verdad la sincronización y el enum',
+ 'qué significa una corrida que imprime una sola instancia',
+ 'quién controla el ciclo de vida'];
+if(TEMAS.length!==QUIZ.length) throw new Error('TEMAS y QUIZ tienen que tener el mismo largo: '+TEMAS.length+' contra '+QUIZ.length);
+const LETRAS=['a','b','c','d'];
+const resp=new Array(QUIZ.length).fill(null);
+function pintaQuiz(){
+  $('quiz').innerHTML=QUIZ.map(function(q,i){
+    let h='<div class="preg" data-i="'+i+'"><p class="num">Pregunta '+(i+1)+' de '+QUIZ.length+' · módulo '+q.m+'</p><p>'+q.t+'</p>';
+    if(q.tipo==='num'){
+      h+='<div class="ctl"><div class="campo"><label>su respuesta, sin puntos ni comas</label><input type="text" data-n="'+i+'" size="16"></div>'
+        +'<div class="campo"><button data-r="'+i+'">responder</button></div></div>';
+    } else {
+      h+='<div class="opciones">'+q.ops.map(function(o,j){
+        return '<label class="op"><input type="radio" name="q'+i+'" value="'+j+'"><span><b>'+LETRAS[j]+'.</b> '+o+'</span></label>';
+      }).join('')+'</div>';
+    }
+    return h+'<div class="zona"></div></div>';
+  }).join('');
+  $('quiz').querySelectorAll('input[type=radio]').forEach(function(inp){
+    inp.addEventListener('change',function(){
+      const i=parseInt(inp.name.slice(1),10);
+      if(resp[i]!==null) return;
+      califica(i,parseInt(inp.value,10));
+    });
+  });
+  $('quiz').querySelectorAll('button[data-r]').forEach(function(b){
+    const i=parseInt(b.dataset.r,10);
+    const inp=$('quiz').querySelector('input[data-n="'+i+'"]');
+    function envia(){ if(resp[i]!==null) return;
+      const n=numero(inp.value);
+      if(!n){ inp.style.borderColor='#B4544B'; return; }
+      inp.style.borderColor='';
+      califica(i,n); }
+    b.addEventListener('click',envia);
+    inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter') envia(); });
+  });
+}
+function califica(i,dado){
+  const q=QUIZ[i], bloque=$('quiz').querySelector('.preg[data-i="'+i+'"]');
+  const ok=(q.tipo==='num')?(String(dado)===q.r):(dado===q.r);
+  resp[i]={dado:dado,ok:ok};
+  if(q.tipo==='num'){
+    const inp=bloque.querySelector('input[data-n="'+i+'"]');
+    inp.disabled=true; bloque.querySelector('button[data-r="'+i+'"]').disabled=true;
+    const d=document.createElement('div');
+    d.className='marca '+(ok?'si':'no');
+    // la unidad va en singular cuando la respuesta es 1: la pregunta del bloque 2
+    // se responde con un peso, y «1 pesos» arruina la frase que uno quiere que
+    // el estudiante se lleve, que es justamente «un peso».
+    const uni=(String(q.r)==='1'&&q.uni1)?q.uni1:q.unidad;
+    d.innerHTML=ok?('<b>Correcto: '+esp(q.r)+' '+uni+'.</b>')
+                  :('Contestó <b>'+esp(String(dado))+'</b>. La respuesta es <b>'+esp(q.r)+' '+uni+'</b>.');
+    bloque.querySelector('.zona').appendChild(d);
+  } else {
+    bloque.querySelectorAll('.op').forEach(function(o){
+      const v=parseInt(o.querySelector('input').value,10);
+      o.classList.remove('elegida');
+      if(v===q.r) o.classList.add('ok'); else if(v===dado) o.classList.add('err');
+      o.querySelector('input').disabled=true;
+    });
+  }
+  const e=document.createElement('div');
+  e.className='expl'+(ok?'':' mal');
+  e.innerHTML='<b>'+(ok?'Bien.':'No.')+'</b> '+q.por;
+  bloque.querySelector('.zona').appendChild(e);
+  revisa();
+}
+function contestadas(){ return resp.filter(function(r){ return r!==null; }).length; }
+function aciertos(){ return resp.filter(function(r){ return r&&r.ok; }).length; }
+function revisa(){
+  const n=contestadas(), a=aciertos();
+  $('bNota').innerHTML='Evaluación: <b>'+a+'</b> de <b>'+QUIZ.length+'</b> ('+n+' contestadas)';
+  if(n<QUIZ.length){
+    $('qRes').innerHTML='<p style="font-size:15.5px;color:var(--gray);margin:0">Van <b>'+n+' de '+QUIZ.length+'</b>, con '+a+' aciertos. Contéstelas todas y aquí aparece el informe.</p>';
+    return;
+  }
+  const fallos=[];
+  resp.forEach(function(r,i){ if(!r.ok) fallos.push(i); });
+  const porMod={};
+  fallos.forEach(function(i){ const m=QUIZ[i].m; porMod[m]=(porMod[m]||0)+1; });
+  let html=marca(a>=12,'<b>'+a+' de '+QUIZ.length+'.</b> '+(a>=12
+    ? (a===QUIZ.length ? 'Las dieciséis. Puede llegar a la sesión 3 y hacer el quiz sin volver a abrir esto.'
+       : 'Por encima del umbral de 12. Lo que falló está abajo, y vale la pena volver a ese módulo antes del quiz porque el quiz pregunta lo mismo de otra forma.')
+    : 'Por debajo del umbral de 12. Lo que hay que mirar no es cuántas fueron sino dónde cayeron: con cinco fallos es casi seguro, y con seis es seguro, que dos de ellos son del mismo bloque, y ese bloque es el que hay que volver a recorrer con los laboratorios. Abajo está a qué módulo lleva cada una. No es una mala noticia: falta el miércoles todavía.'));
+  if(fallos.length===0){
+    html+='<p style="font-size:15.5px">No hay nada que repasar. Lo que sí queda pendiente son las cinco preguntas abiertas de más abajo, que son las que de verdad se parecen al parcial.</p>';
+  } else {
+    html+='<p style="font-size:15.5px">Las que falló, y a qué módulo llevan:</p><table><thead><tr><th>Pregunta</th><th>Volver al módulo</th><th>Qué se estaba midiendo</th></tr></thead><tbody>';
+    fallos.forEach(function(i){
+      const q=QUIZ[i];
+      const nom=mods[q.m-1].dataset.t;
+      html+='<tr><td>'+(i+1)+'</td><td><a href="#" data-va="'+(q.m-1)+'">'+q.m+' · '+nom+'</a></td><td>'+TEMAS[i]+'</td></tr>';
+    });
+    html+='</tbody></table>';
+    const peor=Object.keys(porMod).sort(function(x,y){ return porMod[y]-porMod[x]; })[0];
+    if(porMod[peor]>=2){
+      html+='<p style="font-size:15.5px"><b>Dos o más fallos cayeron en el módulo '+peor+' («'+mods[peor-1].dataset.t+'»).</b> Ese es el que hay que volver a recorrer con los laboratorios, no releyendo: la diferencia entre las dos cosas es todo el punto de este recurso.</p>';
+    }
+  }
+  $('qRes').innerHTML=html;
+  $('qRes').querySelectorAll('a[data-va]').forEach(function(a){
+    a.addEventListener('click',function(ev){ ev.preventDefault(); ir(parseInt(a.dataset.va,10)); });
+  });
+}
+pintaQuiz(); revisa();
+
+/* --- las cinco preguntas abiertas, textuales de la guia de la sesion --- */
+const ABIERTAS=[
+'Un sistema calcula el pago de una entrega con <code>double</code> y el resultado exacto de la operación es 678.100,5 pesos, que hay que liquidar en pesos enteros. Explique, sin usar la palabra «precisión», por qué el sistema paga 678.100 y no 678.101, y por qué el informe de liquidación muestra un valor que parece correcto. Su respuesta debe mencionar qué hace <code>Math.round</code> desde la mitad exacta.',
+'Un compañero sostiene que el problema del <code>double</code> con dinero es un mito, y presenta como evidencia una corrida de un millón de liquidaciones donde la diferencia contra <code>BigDecimal</code> fue de cero pesos. La corrida es real y el número es correcto. Explique por qué esa evidencia no sostiene la conclusión, y describa qué tendría que cambiar en los datos de entrada para que la misma corrida mostrara una diferencia.',
+'Un servicio de liquidación tiene tres tipos de café y las tres fórmulas viven en un <code>if / else if / else</code> dentro del método que calcula el pago. Un equipo propone reemplazarlo por Strategy y otro propone un <code>Map&lt;String, BigDecimal&gt;</code> con el factor de cada tipo. Diga en qué condición sobre las fórmulas cada una de las dos propuestas es la correcta, y cuál de las dos aplica al caso de la cooperativa. Justifique con lo que cada fórmula mira de la muestra.',
+'Un equipo tiene una clase <code>Auditoria</code> con un <code>getInstance()</code> estático, que va acumulando en memoria las liquidaciones del día para imprimir un total al cierre. De las nueve pruebas del módulo, las nueve pasan cuando se corren de una en una, y dos fallan cuando se corre la suite completa. El equipo lo arregla agregándole a <code>Auditoria</code> un método <code>reiniciar()</code> que un <code>@BeforeEach</code> llama antes de cada prueba, y la suite queda verde. Explique por qué esa suite verde no significa que el defecto de diseño esté resuelto, nombre una cosa concreta que ese equipo sigue sin poder hacer con sus pruebas, y diga qué habría cambiado si <code>Auditoria</code> se recibiera por constructor. Explique además por qué sincronizar el <code>getInstance()</code> no tiene ninguna relación con este problema.',
+'Un equipo lee en un blog que «Spring usa el patrón Singleton por omisión» y saca dos conclusiones: que todos sus servicios administrados por Spring tienen el mismo problema de pruebas que la clase <code>PrecioDelDia</code> de hoy, y que por eso hay que declararlos todos con ámbito <code>prototype</code>. Diga cuál de las dos conclusiones es falsa y por qué, en términos de quién controla el ciclo de vida; diga qué es lo que los dos casos sí tienen en común; y diga qué le pediría ver del código de uno de esos servicios para saber si de verdad tiene el problema del estado compartido, porque hay una condición bajo la cual un objeto administrado por Spring lo tiene igual que el patrón.'];
+$('abiertas').innerHTML=ABIERTAS.map(function(t,i){
+  return '<div class="preg"><p class="num">Autoevaluación '+(i+1)+' de 5</p><p>'+t+'</p>'
+    +'<textarea id="ab'+i+'" placeholder="En prosa, tres o cuatro frases. No hay respuesta única y sí hay respuestas que no argumentan."></textarea></div>';
+}).join('');
+
+/* =====================================================================
+   12. COMPROBANTE
+   ===================================================================== */
+function fnv(s){ let h=0x811c9dc5>>>0;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; }
+  return h.toString(16).toUpperCase().padStart(8,'0'); }
+function textoPlano(html){ const d=document.createElement('div'); d.innerHTML=html; return d.textContent.replace(/\s+/g,' ').trim(); }
+function armaComprobante(){
+  const nombre=$('qNom').value.trim()||'(sin nombre)';
+  const f=new Date();
+  const dosD=function(n){ return String(n).padStart(2,'0'); };
+  const fecha=f.getFullYear()+'-'+dosD(f.getMonth()+1)+'-'+dosD(f.getDate())+' '+dosD(f.getHours())+':'+dosD(f.getMinutes());
+  const L=[];
+  L.push('COMPROBANTE · RECURSO INTERACTIVO DE LA SESION 2');
+  L.push('Arquitectura de Software Empresarial (248G8F) · Universidad de Caldas');
+  L.push('Sesion 2 · Patrones de diseno con valor arquitectonico · miercoles 2 de septiembre de 2026');
+  L.push('');
+  L.push('Nombre  : '+nombre);
+  L.push('Generado: '+fecha);
+  L.push('Puntaje : '+aciertos()+' de '+QUIZ.length+'   (contestadas: '+contestadas()+' · umbral 12)');
+  L.push('');
+  L.push('--- LAS DIECISEIS PREGUNTAS -------------------------------------');
+  QUIZ.forEach(function(q,i){
+    const r=resp[i];
+    let dado;
+    if(!r) dado='sin responder';
+    else if(q.tipo==='num') dado=esp(String(r.dado));
+    else dado=LETRAS[r.dado]+') '+textoPlano(q.ops[r.dado]);
+    const esperado=(q.tipo==='num')?esp(q.r):(LETRAS[q.r]+')');
+    L.push(dosD(i+1)+'. '+(r?(r.ok?'OK  ':'MAL '):'--  ')+'modulo '+q.m+' · '+TEMAS[i]);
+    L.push('    respondio: '+dado+(r&&!r.ok?'   | correcta: '+esperado:''));
+  });
+  L.push('');
+  L.push('--- PREDICCION DEL MODULO 5 (antes de hacer el taller) ----------');
+  L.push('v1 modificados: '+($('wr1m').value.trim()||'-')+'   v1 creados: '+($('wr1c').value.trim()||'-'));
+  L.push('v2 modificados: '+($('wr2m').value.trim()||'-')+'   v2 creados: '+($('wr2c').value.trim()||'-'));
+  L.push('se toca el archivo que calcula la plata: '+($('wrq').value||'-'));
+  L.push('');
+  L.push('--- LAS CINCO PREGUNTAS DE AUTOEVALUACION -----------------------');
+  L.push('(no se califican solas; piden un argumento)');
+  ABIERTAS.forEach(function(t,i){
+    L.push('');
+    L.push('['+(i+1)+'] '+textoPlano(t));
+    const v=$('ab'+i).value.trim();
+    L.push('    '+(v?v.split('\n').join('\n    '):'(sin responder)'));
+  });
+  L.push('');
+  L.push('----------------------------------------------------------------');
+  const cuerpo=L.join('\n');
+  return cuerpo+'\nCodigo de verificacion: '+fnv(cuerpo)
+    +'\n(es una suma de comprobacion del texto de arriba: detecta una edicion casual,'
+    +'\n no es una firma y no prueba autoria.)\n';
+}
+$('cbGen').addEventListener('click',function(){
+  const txt=armaComprobante();
+  const nom=($('qNom').value.trim()||'sin-nombre').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='comprobante-sesion-02-'+nom+'.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  window.setTimeout(function(){ URL.revokeObjectURL(url); },2000);
+  let aviso='';
+  if(contestadas()<QUIZ.length) aviso=marca(false,'El comprobante se descargó, pero <b>faltan '+(QUIZ.length-contestadas())+' preguntas por contestar</b> y así quedaron registradas. Contéstelas y vuelva a generarlo.');
+  else aviso=marca(true,'Comprobante descargado con <b>'+aciertos()+' de '+QUIZ.length+'</b>. Está en la carpeta de descargas de su navegador.');
+  $('cbSal').innerHTML=aviso+pre(txt.length>1400?txt.slice(0,1400)+'\n… (el archivo descargado trae todo)':txt);
+});
+$('cbCopiar').addEventListener('click',function(){
+  const txt=armaComprobante();
+  function ok(){ $('cbSal').innerHTML=marca(true,'Copiado al portapapeles. Puede pegarlo en un correo o en un documento.'); }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok,function(){ manual(); });
+  } else manual();
+  function manual(){
+    const ta=document.createElement('textarea');
+    ta.value=txt; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); ok(); }
+    catch(e){ $('cbSal').innerHTML=marca(false,'El navegador no dejó copiar automáticamente. Use el botón de descargar.'); }
+    document.body.removeChild(ta);
+  }
+});
+
+/* =====================================================================
+   13. ARRANQUE
+   ===================================================================== */
+ir(0);
+</script>
+</body>
+</html>
